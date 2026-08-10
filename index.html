@@ -2,7 +2,6 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- Очень важный тег для работы на телефонах -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ВКонтакте (ПК + Моб. 2011)</title>
     <style>
@@ -73,7 +72,21 @@
         .desktop-info-table .val { color: #000; padding: 3px 0; vertical-align: top;}
         .desktop-btn { display: block; background: #537B9B; color: #fff !important; text-align: center; padding: 6px 0; border: 1px solid #3F6484; border-radius: 3px; font-weight: bold; margin-top: 5px; }
         .desktop-btn:hover { background: #6A96C4; text-decoration: none !important; }
-        .desktop-wall { padding: 15px; }
+        
+        /* Поле ввода поста для Десктопа */
+        .desktop-wall { padding: 0 15px 15px; }
+        .desktop-create-post {
+            background: #F9F9F9; padding: 10px; border-bottom: 1px solid #E4EAF0; margin-bottom: 10px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .desktop-create-post textarea {
+            width: 100%; height: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 2px; resize: vertical; font-family: inherit;
+        }
+        .desktop-create-post button {
+            align-self: flex-end; background: #537B9B; color: white; border: 1px solid #3F6484; padding: 5px 15px; border-radius: 2px; cursor: pointer;
+        }
+        .desktop-create-post button:hover { background: #6A96C4; }
+
         .desktop-post { display: grid; grid-template-columns: 60px 1fr; gap: 10px; border-top: 1px solid #E4EAF0; padding-top: 15px; margin-top: 15px; }
         .desktop-post:first-child { border-top: none; margin-top: 0; padding-top: 0; }
         .desktop-post img { width: 55px; border: 1px solid #C5D0DB; }
@@ -110,23 +123,34 @@
         .mobile-view-container.active { display: block; }
         .mobile-empty { padding: 40px 20px; text-align: center; color: #666; }
         .mobile-empty h3 { color: #333; margin-bottom: 5px; }
+
         .mobile-post { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; gap: 10px; }
         .mobile-post img { width: 50px; height: 50px; border-radius: 2px; background: #ccc; object-fit: cover; }
         .mobile-post .author { font-weight: bold; color: #2B587A; font-size: 15px; display: block; }
         .mobile-post .date { color: #999; font-size: 11px; margin-top: 2px; display: block; }
         .mobile-post .text { margin-top: 5px; line-height: 1.4; font-size: 14px; color: #333; }
 
+        /* Поле ввода поста для Мобильного */
+        .mobile-create-post {
+            background: #fff; padding: 10px; border-bottom: 1px solid #eee; margin-top: 10px; display: flex; gap: 8px;
+        }
+        .mobile-create-post textarea {
+            flex: 1; border: 1px solid #ccc; border-radius: 5px; padding: 5px; height: 40px; resize: none; font-family: inherit;
+            font-size: 14px; background: #F9F9F9;
+        }
+        .mobile-create-post button {
+            background: #5E83A9; color: white; border: 1px solid #3A6087; padding: 0 15px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;
+        }
+
         /* ============================================================
            МЕДИА-ЗАПРОСЫ (АВТОМАТИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ)
            ============================================================ */
         
-        /* Если экран шире 768px (ПК, Ноутбуки) - показываем Десктоп */
         @media (min-width: 769px) {
             .desktop-view { display: block; }
             .mobile-view { display: none !important; }
         }
 
-        /* Если экран уже 768px (Телефоны, планшеты) - показываем Мобильный */
         @media (max-width: 768px) {
             .desktop-view { display: none !important; }
             .mobile-view { display: block; }
@@ -150,7 +174,7 @@
     </div>
 
     <!-- ================================================================
-         ИНТЕРФЕЙС 1: ДЕСКТОП (СКРИНШОТ 1 ИЗ ПЕРВОГО ЗАПРОСА)
+         ИНТЕРФЕЙС 1: ДЕСКТОП 
          ================================================================ -->
     <div id="desktop-app" class="desktop-view">
         <div class="desktop-header">
@@ -188,7 +212,10 @@
                 </div>
                 
                 <div class="desktop-wall">
-                    <div style="border-bottom:2px solid #E4EAF0;padding-bottom:5px;margin-bottom:15px;font-weight:bold;color:#2B587A;">Стена <span style="color:#777;font-weight:normal;">(Создайте свой первый пост в консоли: addPost('Текст'))</span></div>
+                    <div class="desktop-create-post">
+                        <textarea id="desk-post-text" placeholder="Что у вас нового?"></textarea>
+                        <button onclick="createPost('desktop')">Отправить</button>
+                    </div>
                     <div id="desktop-wall-content"></div>
                 </div>
             </main>
@@ -196,7 +223,7 @@
     </div>
 
     <!-- ================================================================
-         ИНТЕРФЕЙС 2: МОБИЛЬНЫЙ (СКРИНШОТЫ ИЗ ПРЕДЫДУЩЕГО ЗАПРОСА)
+         ИНТЕРФЕЙС 2: МОБИЛЬНЫЙ 
          ================================================================ -->
     <div id="mobile-app" class="mobile-view">
         
@@ -205,14 +232,14 @@
             <a href="#" class="logout-btn" onclick="logout()">Выход</a>
         </div>
         
-        <!-- Вкладки Мобильного -->
         <div id="mob-news" class="mobile-view-container active">
             <div class="mobile-empty"><h3>Лента новостей</h3><p>Здесь появятся посты друзей и ваши статусы</p></div>
         </div>
 
         <div id="mob-wall" class="mobile-view-container">
-            <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;">
-                <span id="mob-user-greet" style="font-weight:bold;color:#2B587A;">Моя Стена</span>
+            <div class="mobile-create-post">
+                <textarea id="mob-post-text" placeholder="Что у вас нового?"></textarea>
+                <button onclick="createPost('mobile')">Отпр.</button>
             </div>
             <div id="mobile-wall-content"></div>
         </div>
@@ -319,15 +346,12 @@
             document.getElementById('auth-name').value = '';
             document.getElementById('auth-pass').value = '';
             
-            // Скрываем мобильное меню
             document.querySelectorAll('.mobile-view-container').forEach(el => el.classList.remove('active'));
         }
 
         function enterApp() {
             document.getElementById('auth-screen').style.display = 'none';
             
-            // Определяем, кто мы: ПК или Телефон.
-            // Если ширина > 768, включаем десктоп, иначе мобильный.
             if (window.innerWidth > 768) {
                 document.getElementById('desktop-app').style.display = 'block';
                 document.getElementById('mobile-app').style.display = 'none';
@@ -336,16 +360,46 @@
                 document.getElementById('desktop-app').style.display = 'none';
                 document.getElementById('mobile-app').style.display = 'block';
                 renderMobileWall();
-                document.getElementById('mob-user-greet').innerText = "Стена " + currentUser.name;
-                // Включаем вкладку новостей по умолчанию
                 document.getElementById('mob-news').classList.add('active');
                 document.querySelectorAll('.mobile-tab-btn')[0].classList.add('active');
             }
         }
 
         // ================================================================
-        // ОТРИСОВКА ПОСТОВ (Десктоп)
+        // ФУНКЦИЯ СОЗДАНИЯ ПОСТА
         // ================================================================
+        
+        function createPost(deviceType) {
+            if(!currentUser) return alert("Ошибка!");
+            
+            let text = "";
+            if(deviceType === 'desktop') {
+                text = document.getElementById('desk-post-text').value.trim();
+                document.getElementById('desk-post-text').value = ""; // Очистить поле
+            } else {
+                text = document.getElementById('mob-post-text').value.trim();
+                document.getElementById('mob-post-text').value = ""; // Очистить поле
+            }
+
+            if(!text) {
+                alert("Напишите текст поста!");
+                return;
+            }
+
+            // Сохраняем
+            const date = new Date().toLocaleString('ru-RU');
+            DB.posts[currentUser.name].push({ text: text, date: date });
+            saveDB();
+
+            // Перерисовываем
+            if(window.innerWidth > 768) renderDesktopWall(); 
+            else renderMobileWall();
+        }
+
+        // ================================================================
+        // ОТРИСОВКА ПОСТОВ
+        // ================================================================
+
         function renderDesktopWall() {
             const container = document.getElementById('desktop-wall-content');
             const userPosts = DB.posts[currentUser.name] || [];
@@ -370,9 +424,6 @@
             }
         }
 
-        // ================================================================
-        // ОТРИСОВКА ПОСТОВ (Мобильный)
-        // ================================================================
         function renderMobileWall() {
             const container = document.getElementById('mobile-wall-content');
             const userPosts = DB.posts[currentUser.name] || [];
@@ -399,18 +450,6 @@
         }
 
         // ================================================================
-        // ДОБАВЛЕНИЕ ПОСТА ДЛЯ ТЕСТА (Вызовите в консоли)
-        // ================================================================
-        window.addPost = function(text) {
-            if(!currentUser) return alert("Сначала войдите!");
-            const date = new Date().toLocaleString('ru-RU');
-            DB.posts[currentUser.name].push({ text: text, date: date });
-            saveDB();
-            if(window.innerWidth > 768) renderDesktopWall(); 
-            else renderMobileWall();
-        };
-
-        // ================================================================
         // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ МОБИЛЬНЫХ ВКЛАДОК
         // ================================================================
         function switchMobTab(tabName) {
@@ -419,7 +458,6 @@
             
             document.getElementById('mob-' + tabName).classList.add('active');
             
-            // Подсветка кнопки
             document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
                 if (btn.textContent.toLowerCase().includes(tabName)) btn.classList.add('active');
             });
@@ -427,11 +465,10 @@
         }
 
         // ================================================================
-        // ИНИЦИАЛИЗАЦИЯ И АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ ЭКРАНА
+        // ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         window.onload = function() {
             loadDB();
-            // При загрузке всегда показываем вход
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('desktop-app').style.display = 'none';
             document.getElementById('mobile-app').style.display = 'none';
