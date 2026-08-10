@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- Очень важный тег для работы на телефонах -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ВКонтакте (ПК + Моб. 2011)</title>
+    <style>
+        /* ============================================================
+           БАЗОВЫЕ СТИЛИ И СБРОСЫ (ОБЩИЕ ДЛЯ ОБОИХ ИНТЕРФЕЙСОВ)
+           ============================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tahoma', 'Verdana', Arial, sans-serif; background: #DCE1E7; color: #2B587A; }
+        a { text-decoration: none; color: #2B587A; cursor: pointer; }
+        a:hover { text-decoration: underline; }
+        ul { list-style: none; }
+        .container-flex { display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* Ошибка авторизации */
+        #auth-error { color: red; font-size: 12px; margin-bottom: 10px; display: none; }
+
+        /* ============================================================
+           ЭКРАН АВТОРИЗАЦИИ (ОБЩИЙ ДЛЯ ВСЕХ)
+           ============================================================ */
+        #auth-screen {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; padding: 20px; background: #DCE1E7;
+        }
+        .auth-box {
+            background: white; padding: 30px; border-radius: 10px;
+            width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;
+        }
+        .auth-box h2 { color: #2B587A; margin-bottom: 20px; }
+        .auth-box input {
+            width: 100%; padding: 12px; margin-bottom: 10px;
+            border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
+        }
+        .auth-box button {
+            width: 100%; padding: 12px; background: #5E83A9; color: white;
+            border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+        .auth-box button:hover { background: #4A739E; }
+        .auth-toggle { margin-top: 15px; font-size: 14px; color: #2B587A; cursor: pointer; }
+
+        /* ============================================================
+           ===================== ДЕСКТОПНЫЙ ИНТЕРФЕЙС =====================
+           ============================================================ */
+        .desktop-view { display: none; }
+        
+        /* Шапка Десктоп */
+        .desktop-header {
+            background: linear-gradient(to bottom, #6A96C4, #4B739B);
+            height: 32px; border-bottom: 1px solid #2F5882;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; color: white; font-size: 12px; font-weight: bold;
+        }
+        .desktop-header .logo-badge { background: #fff; color: #2B587A; padding: 0 4px; font-weight: 900; border-radius: 3px; margin-right: 5px; }
+        .desktop-header input { border: 1px solid #305878; padding: 2px 5px; font-size: 11px; background: #F2F5F8; width: 180px; }
+        .desktop-header .logout-btn { color: #E2EBF3; font-weight: normal;}
+        
+        /* Макет Десктоп */
+        .desktop-layout { display: grid; grid-template-columns: 200px 1fr; max-width: 980px; margin: 15px auto; gap: 15px; }
+        .desktop-sidebar { background: transparent; }
+        .desktop-sidebar a { display: block; padding: 3px 0; }
+        .desktop-sidebar .nav-header { margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
+        
+        .desktop-content { background: #fff; border: 1px solid #C5D0DB; }
+        .desktop-profile-title { padding: 12px 15px 8px; border-bottom: 1px solid #E4EAF0; font-size: 20px; font-weight: normal; color: #000; }
+        .desktop-profile-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 15px; }
+        .desktop-avatar { width: 100%; border: 1px solid #C5D0DB; }
+        .desktop-info-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .desktop-info-table .lbl { width: 140px; color: #777; padding: 3px 0; vertical-align: top;}
+        .desktop-info-table .val { color: #000; padding: 3px 0; vertical-align: top;}
+        .desktop-btn { display: block; background: #537B9B; color: #fff !important; text-align: center; padding: 6px 0; border: 1px solid #3F6484; border-radius: 3px; font-weight: bold; margin-top: 5px; }
+        .desktop-btn:hover { background: #6A96C4; text-decoration: none !important; }
+        .desktop-wall { padding: 15px; }
+        .desktop-post { display: grid; grid-template-columns: 60px 1fr; gap: 10px; border-top: 1px solid #E4EAF0; padding-top: 15px; margin-top: 15px; }
+        .desktop-post:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+        .desktop-post img { width: 55px; border: 1px solid #C5D0DB; }
+
+        /* ============================================================
+           ===================== МОБИЛЬНЫЙ ИНТЕРФЕЙС =====================
+           ============================================================ */
+        .mobile-view { display: none; padding-bottom: 50px; background: #F2F2F2; }
+        
+        .mobile-header {
+            background-image: linear-gradient(to bottom, #5E83A9, #3A6087);
+            height: 44px; display: flex; align-items: center; justify-content: center;
+            position: sticky; top: 0; z-index: 100; color: white; font-weight: bold; font-size: 18px;
+            padding: 0 10px; text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+        }
+        .mobile-header .logout-btn { position: absolute; right: 10px; top: 12px; color: #dbeaff; font-size: 13px; font-weight: normal;}
+
+        .mobile-bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: #2E2E2E; background-image: linear-gradient(to bottom, #444, #222);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 2px solid #111; z-index: 999;
+        }
+        .mobile-tab-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex: 1; height: 100%; color: #999; font-size: 10px; text-transform: uppercase;
+            border: none; background: transparent; cursor: pointer;
+        }
+        .mobile-tab-btn.active { color: #F2F2F2; background: rgba(255,255,255,0.05); }
+        .tab-icon { display: block; width: 24px; height: 24px; background: #999; margin-bottom: 2px; border-radius: 4px; }
+        .mobile-tab-btn.active .tab-icon { background: #5E83A9; }
+
+        .mobile-view-container { display: none; background: #f2f2f2; }
+        .mobile-view-container.active { display: block; }
+        .mobile-empty { padding: 40px 20px; text-align: center; color: #666; }
+        .mobile-empty h3 { color: #333; margin-bottom: 5px; }
+        .mobile-post { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; gap: 10px; }
+        .mobile-post img { width: 50px; height: 50px; border-radius: 2px; background: #ccc; object-fit: cover; }
+        .mobile-post .author { font-weight: bold; color: #2B587A; font-size: 15px; display: block; }
+        .mobile-post .date { color: #999; font-size: 11px; margin-top: 2px; display: block; }
+        .mobile-post .text { margin-top: 5px; line-height: 1.4; font-size: 14px; color: #333; }
+
+        /* ============================================================
+           МЕДИА-ЗАПРОСЫ (АВТОМАТИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ)
+           ============================================================ */
+        
+        /* Если экран шире 768px (ПК, Ноутбуки) - показываем Десктоп */
+        @media (min-width: 769px) {
+            .desktop-view { display: block; }
+            .mobile-view { display: none !important; }
+        }
+
+        /* Если экран уже 768px (Телефоны, планшеты) - показываем Мобильный */
+        @media (max-width: 768px) {
+            .desktop-view { display: none !important; }
+            .mobile-view { display: block; }
+            #auth-screen .auth-box { max-width: 320px; padding: 20px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ================= ЭКРАН ВХОДА (ОБЩИЙ) ================= -->
+    <div id="auth-screen">
+        <div class="auth-box">
+            <h2 id="auth-title">Вход в ВК</h2>
+            <div id="auth-error" class="auth-error">Ошибка!</div>
+            <input type="text" id="auth-name" placeholder="Имя пользователя">
+            <input type="password" id="auth-pass" placeholder="Пароль">
+            <button id="auth-submit-btn" onclick="handleAuth()">Войти</button>
+            <div class="auth-toggle" onclick="toggleAuthMode()">Нет аккаунта? Зарегистрироваться</div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         ИНТЕРФЕЙС 1: ДЕСКТОП (СКРИНШОТ 1 ИЗ ПЕРВОГО ЗАПРОСА)
+         ================================================================ -->
+    <div id="desktop-app" class="desktop-view">
+        <div class="desktop-header">
+            <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:3px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#" style="color:#E2EBF3;">главная</a> <a href="#" style="color:#E2EBF3;">поиск</a></div>
+            <div><input type="text" placeholder="Поиск"> <a href="#" class="logout-btn" onclick="logout()">выйти</a></div>
+        </div>
+        
+        <div class="desktop-layout">
+            <aside class="desktop-sidebar">
+                <ul>
+                    <li><a href="#"><b>Моя Страница</b></a></li>
+                    <li><a href="#">Мои Друзья</a></li>
+                    <li><a href="#">Мои Сообщения</a></li>
+                    <li><a href="#">Мои Фотографии</a></li>
+                    <li><a href="#">Мои Настройки</a></li>
+                    <li class="nav-header">Приложения</li>
+                    <li><a href="#">Документы</a></li>
+                </ul>
+            </aside>
+            
+            <main class="desktop-content">
+                <div class="desktop-profile-title">Павел Дуров <small style="color:#666;font-size:13px;">заходил сегодня</small></div>
+                <div class="desktop-profile-layout">
+                    <div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Pavel_Durov_2012.jpg/320px-Pavel_Durov_2012.jpg" class="desktop-avatar">
+                        <a href="#" class="desktop-btn">Добавить в друзья</a>
+                    </div>
+                    <div>
+                        <table class="desktop-info-table">
+                            <tr><td class="lbl">День рождения:</td><td class="val">10 октября 1984 г.</td></tr>
+                            <tr><td class="lbl">Языки:</td><td class="val">Русский, English, Français</td></tr>
+                        </table>
+                        <a href="#" style="display:inline-block;margin-top:5px;">Показать подробную информацию</a>
+                    </div>
+                </div>
+                
+                <div class="desktop-wall">
+                    <div style="border-bottom:2px solid #E4EAF0;padding-bottom:5px;margin-bottom:15px;font-weight:bold;color:#2B587A;">Стена <span style="color:#777;font-weight:normal;">(Создайте свой первый пост в консоли: addPost('Текст'))</span></div>
+                    <div id="desktop-wall-content"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         ИНТЕРФЕЙС 2: МОБИЛЬНЫЙ (СКРИНШОТЫ ИЗ ПРЕДЫДУЩЕГО ЗАПРОСА)
+         ================================================================ -->
+    <div id="mobile-app" class="mobile-view">
+        
+        <div class="mobile-header">
+            <span>Новости</span>
+            <a href="#" class="logout-btn" onclick="logout()">Выход</a>
+        </div>
+        
+        <!-- Вкладки Мобильного -->
+        <div id="mob-news" class="mobile-view-container active">
+            <div class="mobile-empty"><h3>Лента новостей</h3><p>Здесь появятся посты друзей и ваши статусы</p></div>
+        </div>
+
+        <div id="mob-wall" class="mobile-view-container">
+            <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;">
+                <span id="mob-user-greet" style="font-weight:bold;color:#2B587A;">Моя Стена</span>
+            </div>
+            <div id="mobile-wall-content"></div>
+        </div>
+
+        <div id="mob-msg" class="mobile-view-container">
+            <div class="mobile-empty"><h3>Сообщений нет</h3></div>
+        </div>
+
+        <div id="mob-friends" class="mobile-view-container">
+            <div class="mobile-empty"><h3>Друзей нет</h3></div>
+        </div>
+
+        <!-- Нижнее меню Мобильного -->
+        <nav class="mobile-bottom-nav">
+            <button class="mobile-tab-btn active" onclick="switchMobTab('news')">
+                <div class="tab-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M22 3H2v16h20V3zM4 5h16v10H4V5zm0 12h16v2H4v-2z%22/></svg>');"></div>
+                Новости
+            </button>
+            <button class="mobile-tab-btn" onclick="switchMobTab('wall')">
+                <div class="tab-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z%22/></svg>');"></div>
+                Стена
+            </button>
+            <button class="mobile-tab-btn" onclick="switchMobTab('msg')">
+                <div class="tab-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 9h8v2H8V9zm4 5H8v-2h4v2zm4-4H8V8h8v2z%22/></svg>');"></div>
+                Сообщения
+            </button>
+            <button class="mobile-tab-btn" onclick="switchMobTab('friends')">
+                <div class="tab-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>');"></div>
+                Друзья
+            </button>
+        </nav>
+    </div>
+
+
+    <script>
+        // ================================================================
+        // ЛОГИКА БАЗЫ ДАННЫХ (LocalStorage) И АВТОРИЗАЦИЯ
+        // ================================================================
+        
+        let currentUser = null;
+        let DB = { users: [], posts: {} };
+        let isRegisterMode = false;
+
+        function loadDB() {
+            const data = localStorage.getItem('vk_dual_db');
+            if (data) {
+                DB = JSON.parse(data);
+            } else {
+                // Инициализация базы с тестовым пользователем
+                DB = { 
+                    users: [{name: "Павел", pass: "123"}], 
+                    posts: {"Павел": [{text: "Всем привет! Это моя тестовая стена.", date: "сегодня в 12:00"}]} 
+                };
+                saveDB();
+            }
+        }
+
+        function saveDB() {
+            localStorage.setItem('vk_dual_db', JSON.stringify(DB));
+        }
+
+        // Авторизация
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('auth-title').innerText = isRegisterMode ? 'Регистрация' : 'Вход в ВК';
+            document.getElementById('auth-submit-btn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
+            document.getElementById('auth-error').style.display = 'none';
+        }
+
+        function handleAuth() {
+            const name = document.getElementById('auth-name').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+            const errorEl = document.getElementById('auth-error');
+            loadDB();
+
+            if (!name || !pass) {
+                errorEl.innerText = 'Заполните все поля!'; errorEl.style.display = 'block'; return;
+            }
+
+            if (isRegisterMode) {
+                if (DB.users.find(u => u.name === name)) {
+                    errorEl.innerText = 'Пользователь уже есть!'; errorEl.style.display = 'block'; return;
+                }
+                DB.users.push({ name: name, pass: pass });
+                DB.posts[name] = [];
+                saveDB();
+                alert('Аккаунт создан! Войдите.');
+                toggleAuthMode();
+            } else {
+                const user = DB.users.find(u => u.name === name && u.pass === pass);
+                if (!user) {
+                    errorEl.innerText = 'Неверный логин!'; errorEl.style.display = 'block'; return;
+                }
+                currentUser = user;
+                enterApp();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('desktop-app').style.display = 'none';
+            document.getElementById('mobile-app').style.display = 'none';
+            document.getElementById('auth-name').value = '';
+            document.getElementById('auth-pass').value = '';
+            
+            // Скрываем мобильное меню
+            document.querySelectorAll('.mobile-view-container').forEach(el => el.classList.remove('active'));
+        }
+
+        function enterApp() {
+            document.getElementById('auth-screen').style.display = 'none';
+            
+            // Определяем, кто мы: ПК или Телефон.
+            // Если ширина > 768, включаем десктоп, иначе мобильный.
+            if (window.innerWidth > 768) {
+                document.getElementById('desktop-app').style.display = 'block';
+                document.getElementById('mobile-app').style.display = 'none';
+                renderDesktopWall();
+            } else {
+                document.getElementById('desktop-app').style.display = 'none';
+                document.getElementById('mobile-app').style.display = 'block';
+                renderMobileWall();
+                document.getElementById('mob-user-greet').innerText = "Стена " + currentUser.name;
+                // Включаем вкладку новостей по умолчанию
+                document.getElementById('mob-news').classList.add('active');
+                document.querySelectorAll('.mobile-tab-btn')[0].classList.add('active');
+            }
+        }
+
+        // ================================================================
+        // ОТРИСОВКА ПОСТОВ (Десктоп)
+        // ================================================================
+        function renderDesktopWall() {
+            const container = document.getElementById('desktop-wall-content');
+            const userPosts = DB.posts[currentUser.name] || [];
+            let html = '';
+            
+            if (userPosts.length === 0) {
+                container.innerHTML = `<div style="text-align:center;padding:20px;color:#777;">Здесь пока пусто. Напишите первый пост!</div>`;
+            } else {
+                for(let i = userPosts.length - 1; i >= 0; i--) {
+                    const post = userPosts[i];
+                    html += `
+                        <div class="desktop-post">
+                            <img src="https://i.pravatar.cc/150?u=${currentUser.name}">
+                            <div>
+                                <div style="display:flex;gap:10px;"><a href="#" style="font-weight:bold;">${currentUser.name}</a> <span style="color:#777;font-size:11px;">${post.date}</span></div>
+                                <div style="margin-top:5px;">${post.text}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        // ================================================================
+        // ОТРИСОВКА ПОСТОВ (Мобильный)
+        // ================================================================
+        function renderMobileWall() {
+            const container = document.getElementById('mobile-wall-content');
+            const userPosts = DB.posts[currentUser.name] || [];
+            let html = '';
+            
+            if (userPosts.length === 0) {
+                container.innerHTML = `<div class="mobile-empty"><h3>Здесь пока пусто</h3></div>`;
+            } else {
+                for(let i = userPosts.length - 1; i >= 0; i--) {
+                    const post = userPosts[i];
+                    html += `
+                        <div class="mobile-post">
+                            <img src="https://i.pravatar.cc/150?u=${currentUser.name}">
+                            <div style="flex:1;">
+                                <span class="author">${currentUser.name}</span>
+                                <span class="date">${post.date}</span>
+                                <div class="text">${post.text}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            }
+        }
+
+        // ================================================================
+        // ДОБАВЛЕНИЕ ПОСТА ДЛЯ ТЕСТА (Вызовите в консоли)
+        // ================================================================
+        window.addPost = function(text) {
+            if(!currentUser) return alert("Сначала войдите!");
+            const date = new Date().toLocaleString('ru-RU');
+            DB.posts[currentUser.name].push({ text: text, date: date });
+            saveDB();
+            if(window.innerWidth > 768) renderDesktopWall(); 
+            else renderMobileWall();
+        };
+
+        // ================================================================
+        // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ МОБИЛЬНЫХ ВКЛАДОК
+        // ================================================================
+        function switchMobTab(tabName) {
+            document.querySelectorAll('.mobile-view-container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.mobile-tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('mob-' + tabName).classList.add('active');
+            
+            // Подсветка кнопки
+            document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(tabName)) btn.classList.add('active');
+            });
+            if(tabName === 'news') document.querySelectorAll('.mobile-tab-btn')[0].classList.add('active');
+        }
+
+        // ================================================================
+        // ИНИЦИАЛИЗАЦИЯ И АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ ЭКРАНА
+        // ================================================================
+        window.onload = function() {
+            loadDB();
+            // При загрузке всегда показываем вход
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('desktop-app').style.display = 'none';
+            document.getElementById('mobile-app').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
