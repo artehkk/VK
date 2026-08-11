@@ -154,11 +154,11 @@
             <a href="#" class="logout-btn" onclick="logout()">Выход</a>
         </div>
 
-        <div id="mob-news" class="mobile-view-container">
+        <div id="mob-news" class="mobile-view-container active">
             <div class="mobile-empty"><h3>Загрузка новостей...</h3></div>
         </div>
 
-        <div id="mob-wall" class="mobile-view-container active">
+        <div id="mob-wall" class="mobile-view-container">
             <div class="mobile-profile-header" id="mob-profile-header">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%235E83A9'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='30' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" id="mob-profile-avatar" class="mobile-profile-avatar">
                 <div>
@@ -248,7 +248,6 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
-        // Переменные
         let currentUser = null;
         let currentChatPartnerId = null;
         let currentChatPartnerName = null;
@@ -260,7 +259,7 @@
         const avatarCache = new Map();
 
         // =============================================
-        // АВТОРИЗАЦИЯ (НОВАЯ, СУПЕР-НАДЕЖНАЯ ЛОГИКА)
+        // АВТОРИЗАЦИЯ (СУПЕР-ПРОСТАЯ)
         // =============================================
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -279,7 +278,6 @@
             if(name.length < 2) return showAuthError("Имя должно быть минимум 2 символа!");
 
             try {
-                // ЕСЛИ РЕГИСТРАЦИЯ
                 if (isRegisterMode) {
                     const email = `${name}_${Date.now()}@vkclone.local`;
                     const cred = await auth.createUserWithEmailAndPassword(email, pass);
@@ -301,44 +299,23 @@
                     return;
                 } 
 
-                // ЕСЛИ ВХОД
-                // 1. Сначала ищем пользователя по имени в Firestore
+                // ВХОД (ПРОСТОЙ)
                 const snap = await db.collection('users').where('name', '==', name).get();
-                
                 if (!snap.empty) {
-                    // Нашли пользователя в базе. Берем его email.
                     const userData = snap.docs[0].data();
                     const foundEmail = userData.email;
-                    
                     if (foundEmail) {
-                        // Пробуем войти по найденному email
                         const cred = await auth.signInWithEmailAndPassword(foundEmail, pass);
                         currentUser = auth.currentUser;
                         enterApp();
                         return;
-                    } else {
-                        return showAuthError("Ваш аккаунт поврежден (нет email). Перерегистрируйтесь.");
                     }
                 }
-
-                // 2. Если не нашли в базе, пробуем прямой вход (вдруг пользователь ввел email в поле имени)
-                try {
-                    const cred = await auth.signInWithEmailAndPassword(name, pass);
-                    currentUser = auth.currentUser;
-                    enterApp();
-                    return;
-                } catch (e) {
-                    if (e.code !== 'auth/user-not-found') throw e;
-                }
-
-                // 3. Если всё не удалось — пользователь не найден
-                return showAuthError("Пользователь не найден. Проверьте имя или зарегистрируйтесь.");
+                return showAuthError("Пользователь не найден. Проверьте имя.");
 
             } catch (e) {
                 if (e.code === 'auth/user-not-found') return showAuthError("Неверный логин!");
                 if (e.code === 'auth/wrong-password') return showAuthError("Неверный пароль!");
-                if (e.code === 'auth/email-already-in-use') return showAuthError("Имя занято!");
-                if (e.code === 'auth/network-request-failed') return showAuthError("Нет интернета!");
                 return showAuthError("Ошибка: " + e.message);
             }
         }
@@ -400,16 +377,11 @@
                 if (data.about) infoHtml += `<div>📝 <span>${escapeHtml(data.about)}</span></div>`;
                 if (data.coins !== undefined) infoHtml += `<div>💰 <span>${data.coins} монет</span></div>`;
                 document.getElementById('mob-profile-info').innerHTML = infoHtml;
-
-                // Загружаем магазин подарков
-                renderGiftStore();
-                // Загружаем полученные подарки
-                renderMyGifts();
             }
         }
 
         // =============================================
-        // ФУНКЦИИ ОБЩЕГО НАЗНАЧЕНИЯ
+        // ОБЩИЕ ФУНКЦИИ
         // =============================================
         function toggleEditProfile() {
             const form = document.getElementById('mob-edit-form');
@@ -444,8 +416,8 @@
             await db.collection('users').doc(currentUser.uid).update({ photoURL: url });
             avatarCache.delete(currentUser.uid);
             loadUserProfile();
-            alert("Аватарка обновлена!");
-            document.getElementById('avatar-upload').value = '';
+            // Принудительно обновляем, чтобы показать новую аву
+            location.reload();
         }
 
         async function deleteWall() {
@@ -469,12 +441,14 @@
             btn.innerText = '...';
             btn.disabled = true;
             try {
+                // Сохраняем пост в базу
                 await db.collection('posts').add({
                     authorName: currentUser.displayName,
                     authorId: currentUser.uid,
                     text: text,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                // Мгновенно перерисовываем стену
                 renderUI(device);
             } catch (e) { alert("Ошибка отправки"); }
             btn.innerText = original;
@@ -620,7 +594,7 @@
         }
 
         // =============================================
-        // ДРУЗЬЯ
+        // ДРУЗЬЯ И ЧАТЫ
         // =============================================
         async function searchUsers(device) {
             const inputId = device === 'desktop' ? 'desk-search-input' : 'mob-search-input';
@@ -685,9 +659,6 @@
             } catch (e) {}
         }
 
-        // =============================================
-        // ЧАТЫ
-        // =============================================
         async function openChat(friendId) {
             document.getElementById('chat-messages-box').innerHTML = '<div style="padding:10px;color:#777;text-align:center;">Загрузка чата...</div>';
             document.getElementById('chat-interface').style.display = 'flex';
@@ -775,134 +746,6 @@
                 });
                 container.innerHTML = html;
             } catch (e) {}
-        }
-
-        // =============================================
-        // ПОДАРКИ И МОНЕТЫ
-        // =============================================
-        const GIFTS = [
-            { id: 'rose', name: '🌹 Роза', price: 10 },
-            { id: 'bear', name: '🧸 Мишка', price: 15 },
-            { id: 'cactus', name: '🌵 Кактус', price: 5 },
-            { id: 'heart', name: '❤️ Сердечко', price: 20 }
-        ];
-
-        function renderGiftStore() {
-            const container = document.getElementById('mob-profile-info');
-            let storeHtml = `
-                <div class="gifts-store-window">
-                    <h3>🎁 Магазин подарков</h3>
-                    <div class="gift-grid">
-            `;
-            GIFTS.forEach(g => {
-                storeHtml += `
-                    <div class="gift-item" onclick="buyGift('${g.id}')">
-                        <img src="gifts/${g.id}.png" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2225%22 y=%2230%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%23999%22%3E${g.id}%3C/text%3E%3C/svg%3E'" />
-                        <span class="gift-name">${g.name}</span>
-                        <span class="gift-price">${g.price} монет</span>
-                    </div>
-                `;
-            });
-            storeHtml += `</div></div>`;
-            container.insertAdjacentHTML('beforeend', storeHtml);
-        }
-
-        async function buyGift(giftId) {
-            const userData = (await db.collection('users').doc(currentUser.uid).get()).data();
-            if (!userData) return;
-            const gift = GIFTS.find(g => g.id === giftId);
-            if (!gift) return alert("Подарок не найден!");
-            if (userData.coins < gift.price) return alert(`Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
-
-            const friendNames = [];
-            const friendSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-            friendSnap.forEach(doc => friendNames.push(doc.data().friendName));
-            if (!friendNames.length) return alert("У вас нет друзей, чтобы дарить подарки!");
-
-            const recipientName = prompt(`Кому подарить ${gift.name}?\nДрузья: ${friendNames.join(', ')}`);
-            if (!recipientName) return;
-            if (!friendNames.includes(recipientName)) return alert("Этот пользователь не у вас в друзьях!");
-
-            const snap = await db.collection('users').where('name', '==', recipientName).get();
-            if (snap.empty) return alert("Пользователь не найден!");
-            const recipientId = snap.docs[0].id;
-
-            await db.collection('users').doc(currentUser.uid).update({
-                coins: firebase.firestore.FieldValue.increment(-gift.price)
-            });
-
-            await db.collection('gifts').add({
-                fromId: currentUser.uid,
-                fromName: currentUser.displayName,
-                toId: recipientId,
-                toName: recipientName,
-                giftId: giftId,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            alert(`🎁 ${gift.name} успешно подарен ${recipientName}!`);
-            loadUserProfile();
-        }
-
-        async function renderMyGifts() {
-            const container = document.getElementById('mob-profile-info');
-            const snap = await db.collection('gifts').where('toId', '==', currentUser.uid).orderBy('createdAt', 'desc').get();
-            
-            let html = `<div class="gifts-store-window"><h3>💝 Мои подарки</h3><div class="my-gifts-grid">`;
-            if (snap.empty) {
-                html += `<div style="color:#777;font-size:13px;">У вас пока нет подарков</div>`;
-            } else {
-                snap.forEach(doc => {
-                    const g = doc.data();
-                    const gift = GIFTS.find(x => x.id === g.giftId);
-                    const iconName = gift ? gift.id : 'unknown';
-                    html += `
-                        <div class="my-gift-item">
-                            <img src="gifts/${iconName}.png" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2210%22 text-anchor=%22middle%22 fill=%22%23999%22%3E${iconName}%3C/text%3E%3C/svg%3E'" />
-                            <span class="gift-from">от ${escapeHtml(g.fromName)}</span>
-                            <button class="return-btn" onclick="returnCoins('${doc.id}', '${g.fromId}')">↩️ Вернуть монеты</button>
-                        </div>
-                    `;
-                });
-            }
-            html += `</div></div>`;
-            container.insertAdjacentHTML('beforeend', html);
-        }
-
-        async function returnCoins(giftDocId, fromId) {
-            const docRef = db.collection('gifts').doc(giftDocId);
-            const doc = await docRef.get();
-            if (!doc.exists) return alert("Подарок не найден!");
-            if (doc.data().returned) return alert("Вы уже вернули монеты за этот подарок!");
-
-            const gift = GIFTS.find(g => g.id === doc.data().giftId);
-            if (!gift) return alert("Ошибка: подарок не найден в каталоге");
-            const myData = (await db.collection('users').doc(currentUser.uid).get()).data();
-            if (myData.coins < gift.price) return alert(`У вас недостаточно монет, чтобы вернуть! Нужно ${gift.price}`);
-
-            await db.collection('users').doc(fromId).update({
-                coins: firebase.firestore.FieldValue.increment(gift.price)
-            });
-            await db.collection('users').doc(currentUser.uid).update({
-                coins: firebase.firestore.FieldValue.increment(-gift.price)
-            });
-            await docRef.update({ returned: true });
-
-            alert(`✅ Монеты (${gift.price}) возвращены пользователю ${escapeHtml(doc.data().fromName)}. Подарок остался у вас.`);
-            loadUserProfile();
-        }
-
-        // =============================================
-        // ЗВУК УВЕДОМЛЕНИЯ
-        // =============================================
-        function playNotificationSound() {
-            try {
-                const audio = new Audio('notify.mp3');
-                audio.volume = 0.5;
-                audio.play().catch(e => console.log("Звук заблокирован браузером"));
-            } catch (e) {
-                console.log("Ошибка звука:", e);
-            }
         }
 
         // =============================================
