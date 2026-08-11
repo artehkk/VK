@@ -154,11 +154,8 @@
             <a href="#" class="logout-btn" onclick="logout()">Выход</a>
         </div>
 
-        <div id="mob-news" class="mobile-view-container active">
-            <div class="mobile-empty"><h3>Загрузка новостей...</h3></div>
-        </div>
-
-        <div id="mob-wall" class="mobile-view-container">
+        <!-- МОБИЛЬНЫЕ ВКЛАДКИ -->
+        <div id="mob-wall" class="mobile-view-container active">
             <div class="mobile-profile-header" id="mob-profile-header">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%235E83A9'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='30' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" id="mob-profile-avatar" class="mobile-profile-avatar">
                 <div>
@@ -187,6 +184,10 @@
                 <button onclick="createPost('mobile')" id="mob-send-btn">Отпр.</button>
             </div>
             <div id="mobile-wall-content"></div>
+        </div>
+
+        <div id="mob-news" class="mobile-view-container">
+            <div class="mobile-empty"><h3>Загрузка новостей...</h3></div>
         </div>
 
         <div id="mob-msg" class="mobile-view-container">
@@ -259,7 +260,7 @@
         const avatarCache = new Map();
 
         // =============================================
-        // АВТОРИЗАЦИЯ (СУПЕР-ПРОСТАЯ)
+        // АВТОРИЗАЦИЯ
         // =============================================
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -290,7 +291,7 @@
                         status: "",
                         about: "",
                         photoURL: "",
-                        coins: 100,
+                        coins: 100, // СТАРТОВЫЕ МОНЕТЫ
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     alert("Аккаунт создан! Вы получили 100 монет.");
@@ -299,7 +300,7 @@
                     return;
                 } 
 
-                // ВХОД (ПРОСТОЙ)
+                // ВХОД
                 const snap = await db.collection('users').where('name', '==', name).get();
                 if (!snap.empty) {
                     const userData = snap.docs[0].data();
@@ -375,6 +376,7 @@
                 if (data.city) infoHtml += `<div>📍 <span>${escapeHtml(data.city)}</span></div>`;
                 if (data.status) infoHtml += `<div>💍 <span>${escapeHtml(data.status)}</span></div>`;
                 if (data.about) infoHtml += `<div>📝 <span>${escapeHtml(data.about)}</span></div>`;
+                // ДОБАВЛЕНО ОТОБРАЖЕНИЕ МОНЕТ
                 if (data.coins !== undefined) infoHtml += `<div>💰 <span>${data.coins} монет</span></div>`;
                 document.getElementById('mob-profile-info').innerHTML = infoHtml;
             }
@@ -410,14 +412,31 @@
                 alert('Файл больше 5 МБ!');
                 return;
             }
-            const storageRef = storage.ref(`avatars/${currentUser.uid}`);
-            await storageRef.put(file);
-            const url = await storageRef.getDownloadURL();
-            await db.collection('users').doc(currentUser.uid).update({ photoURL: url });
-            avatarCache.delete(currentUser.uid);
-            loadUserProfile();
-            // Принудительно обновляем, чтобы показать новую аву
-            location.reload();
+            
+            const btn = document.querySelector('[onclick="document.getElementById(\'avatar-upload\').click()"]');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ Загрузка...';
+            btn.disabled = true;
+            
+            try {
+                const storageRef = storage.ref(`avatars/${currentUser.uid}`);
+                await storageRef.put(file);
+                const url = await storageRef.getDownloadURL();
+                
+                await db.collection('users').doc(currentUser.uid).update({ photoURL: url });
+                avatarCache.delete(currentUser.uid);
+                
+                // Обновляем аву без перезагрузки
+                document.getElementById('mob-profile-avatar').src = url + '?t=' + Date.now();
+                
+                alert("✅ Аватарка обновлена!");
+            } catch (e) {
+                alert("❌ Ошибка загрузки: " + e.message);
+            }
+            
+            btn.innerText = originalText;
+            btn.disabled = false;
+            document.getElementById('avatar-upload').value = '';
         }
 
         async function deleteWall() {
@@ -441,14 +460,12 @@
             btn.innerText = '...';
             btn.disabled = true;
             try {
-                // Сохраняем пост в базу
                 await db.collection('posts').add({
                     authorName: currentUser.displayName,
                     authorId: currentUser.uid,
                     text: text,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // Мгновенно перерисовываем стену
                 renderUI(device);
             } catch (e) { alert("Ошибка отправки"); }
             btn.innerText = original;
