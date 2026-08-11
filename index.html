@@ -26,9 +26,10 @@
         .auth-toggle { margin-top: 15px; font-size: 14px; color: #2B587A; cursor: pointer; }
 
         .desktop-view { display: none; }
-        .desktop-header { background: linear-gradient(to bottom, #6A96C4, #4B739B); height: 32px; border-bottom: 1px solid #2F5882; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 12px; font-weight: bold; }
+        .desktop-header { background: linear-gradient(to bottom, #6A96C4, #4B739B); height: 40px; border-bottom: 1px solid #2F5882; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 13px; font-weight: bold; }
+        .desktop-header a { color: #dbeaff; }
         .desktop-layout { display: grid; grid-template-columns: 200px 1fr; max-width: 980px; margin: 15px auto; gap: 15px; }
-        .desktop-sidebar a { display: block; padding: 3px 0; cursor: pointer; }
+        .desktop-sidebar a { display: block; padding: 5px 0; cursor: pointer; color: #2B587A; }
         .desktop-sidebar a:hover { text-decoration: underline; }
         .desktop-content { background: #fff; border: 1px solid #C5D0DB; min-height: 500px; }
         .desktop-profile-title { padding: 12px 15px 8px; border-bottom: 1px solid #E4EAF0; font-size: 20px; font-weight: normal; color: #000; }
@@ -43,9 +44,9 @@
         .desktop-post .text, .mobile-post .text { margin-top: 5px; line-height: 1.4; font-size: 14px; color: #333; white-space: pre-wrap; word-break: break-word; }
 
         .mobile-view { display: block; padding-bottom: 60px; background: #F2F2F2; min-height: 100vh; }
-        .mobile-header { background-image: linear-gradient(to bottom, #5E83A9, #3A6087); height: 44px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; color: white; font-weight: bold; font-size: 18px; padding: 0 10px; text-shadow: 0 1px 0 rgba(0,0,0,0.3); }
-        .mobile-header .logout-btn { position: absolute; right: 10px; top: 12px; color: #dbeaff; font-size: 13px; font-weight: normal; }
-        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; background: #2E2E2E; background-image: linear-gradient(to bottom, #444, #222); display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #111; z-index: 999; }
+        .mobile-header { background: linear-gradient(to bottom, #5E83A9, #3A6087); height: 44px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; color: white; font-weight: bold; font-size: 18px; padding: 0 10px; text-shadow: 0 1px 0 rgba(0,0,0,0.3); }
+        .mobile-header .logout-btn { position: absolute; right: 10px; top: 12px; color: #dbeaff; font-size: 13px; font-weight: normal; cursor: pointer; }
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; background: #2E2E2E; background: linear-gradient(to bottom, #444, #222); display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #111; z-index: 999; }
         .mobile-tab-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; color: #999; font-size: 9px; text-transform: uppercase; border: none; background: transparent; cursor: pointer; padding: 2px; }
         .mobile-tab-btn.active { color: #F2F2F2; background: rgba(255,255,255,0.08); }
         .tab-icon { display: block; width: 22px; height: 22px; background: #999; margin-bottom: 2px; border-radius: 4px; background-size: contain; background-position: center; background-repeat: no-repeat; }
@@ -102,6 +103,7 @@
         .loading { text-align: center; padding: 40px; color: #999; }
         .loading::after { content: '...'; animation: dots 1.5s infinite; }
         @keyframes dots { 0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
+        .empty { text-align: center; padding: 40px 20px; color: #999; }
     </style>
 </head>
 <body>
@@ -114,7 +116,7 @@
             <input type="text" id="auth-name" placeholder="Имя пользователя">
             <input type="password" id="auth-pass" placeholder="Пароль">
             <button onclick="handleAuth()" id="auth-btn">Войти</button>
-            <div class="auth-toggle" onclick="toggleAuthMode()">Нет аккаунта? Зарегистрироваться</div>
+            <div class="auth-toggle" onclick="toggleAuth()">Нет аккаунта? Зарегистрироваться</div>
         </div>
     </div>
 
@@ -122,7 +124,7 @@
     <div id="desktop-app" class="desktop-view">
         <div class="desktop-header">
             <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:3px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#">главная</a></div>
-            <div><a href="#" class="logout-btn" onclick="logout()">выйти</a></div>
+            <div><a href="#" onclick="logout()">выйти</a></div>
         </div>
         <div class="desktop-layout">
             <aside class="desktop-sidebar">
@@ -140,7 +142,7 @@
                     <div class="desktop-profile-title" id="desk-wall-title">Моя Страница</div>
                     <div class="desktop-create-post">
                         <textarea id="desk-post-text" placeholder="Что у вас нового?"></textarea>
-                        <button onclick="createPost('desktop')" id="desk-send-btn">Отправить</button>
+                        <button onclick="createPostDesktop()" id="desk-send-btn">Отправить</button>
                     </div>
                     <div id="desktop-wall-content" style="padding:15px;"></div>
                 </div>
@@ -148,7 +150,7 @@
                 <div id="desk-page-friends" style="display:none; padding:15px;"><h3>Мои Друзья</h3><div id="desk-friends-list"></div></div>
                 <div id="desk-page-search" style="display:none; padding:15px;">
                     <h3>Поиск</h3>
-                    <input type="text" id="desk-search-input" placeholder="Введите имя..." style="width:100%; padding:8px; border:1px solid #ccc; margin-bottom:10px;" oninput="searchUsers('desktop')">
+                    <input type="text" id="desk-search-input" placeholder="Введите имя..." style="width:100%; padding:8px; border:1px solid #ccc; margin-bottom:10px;" oninput="searchUsersDesktop()">
                     <div id="desk-search-results"></div>
                 </div>
                 <div id="desk-page-messages" style="display:none; padding:15px;"><h3>Сообщения</h3><div id="desk-msg-list"></div></div>
@@ -190,7 +192,7 @@
 
             <div class="mobile-create-post">
                 <textarea id="mob-post-text" placeholder="Что у вас нового?"></textarea>
-                <button onclick="createPost('mobile')" id="mob-send-btn">Отпр.</button>
+                <button onclick="createPostMobile()" id="mob-send-btn">Отпр.</button>
             </div>
             <div id="mobile-wall-content"><div class="loading">Загрузка</div></div>
         </div>
@@ -208,7 +210,7 @@
         <div id="mob-friends" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;">
                 <h3 style="font-size:15px; color:#000;">Друзья</h3>
-                <input type="text" id="mob-search-input" placeholder="Поиск людей" style="width:100%; padding:6px; border:1px solid #ccc; margin-top:5px; border-radius:4px;" oninput="searchUsers('mobile')">
+                <input type="text" id="mob-search-input" placeholder="Поиск людей" style="width:100%; padding:6px; border:1px solid #ccc; margin-top:5px; border-radius:4px;" oninput="searchUsersMobile()">
             </div>
             <div id="mobile-friends-list"><div class="loading">Загрузка</div></div>
         </div>
@@ -280,7 +282,7 @@
         let currentChatPartnerName = null;
         let unsubscribeChat = null;
         let unsubscribeWall = null;
-        let isRegisterMode = false;
+        let isRegister = false;
         const avatarCache = new Map();
 
         const GIFTS = [
@@ -291,141 +293,126 @@
         ];
 
         // =============================================
-// АВТОРИЗАЦИЯ
-// =============================================
-function toggleAuth() {
-    isRegister = !isRegister;
-    document.getElementById('auth-title').textContent = isRegister ? 'Регистрация' : 'Вход';
-    document.getElementById('auth-btn').textContent = isRegister ? 'Зарегистрироваться' : 'Войти';
-    document.getElementById('auth-error').style.display = 'none';
-}
+        // АВТОРИЗАЦИЯ
+        // =============================================
+        function toggleAuth() {
+            isRegister = !isRegister;
+            document.getElementById('auth-title').textContent = isRegister ? 'Регистрация' : 'Вход';
+            document.getElementById('auth-btn').textContent = isRegister ? 'Зарегистрироваться' : 'Войти';
+            document.getElementById('auth-error').style.display = 'none';
+        }
 
-async function handleAuth() {
-    const name = document.getElementById('auth-name').value.trim();
-    const pass = document.getElementById('auth-pass').value.trim();
-    const errorEl = document.getElementById('auth-error');
-    errorEl.style.display = 'none';
+        async function handleAuth() {
+            const name = document.getElementById('auth-name').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+            const errorEl = document.getElementById('auth-error');
+            errorEl.style.display = 'none';
 
-    // Валидация
-    if (!name || !pass) {
-        showError('Заполните все поля!');
-        return;
-    }
-    if (pass.length < 6) {
-        showError('Пароль минимум 6 символов!');
-        return;
-    }
-    if (name.length < 2) {
-        showError('Имя минимум 2 символа!');
-        return;
-    }
-
-    try {
-        console.log('Начинаем процесс:', isRegister ? 'Регистрация' : 'Вход');
-        
-        if (isRegister) {
-            // РЕГИСТРАЦИЯ
-            console.log('Попытка регистрации...');
-            const email = `${name}_${Date.now()}@vkclone.local`;
-            
-            // Создаем пользователя
-            const cred = await auth.createUserWithEmailAndPassword(email, pass);
-            console.log('Пользователь создан:', cred.user.uid);
-            
-            // Обновляем профиль
-            await cred.user.updateProfile({ displayName: name });
-            console.log('Профиль обновлен');
-            
-            // Создаем запись в Firestore
-            await db.collection('users').doc(cred.user.uid).set({
-                name: name,
-                email: email,
-                coins: 100,
-                createdAt: new Date()
-            });
-            console.log('Запись в Firestore создана');
-
-            // Создаем приветственный пост
-            await db.collection('posts').add({
-                authorId: cred.user.uid,
-                authorName: name,
-                text: '👋 Привет! Добро пожаловать в VK 2011!',
-                createdAt: new Date()
-            });
-            console.log('Приветственный пост создан');
-
-            alert('✅ Аккаунт создан! Вы получили 100 монет.');
-            currentUser = auth.currentUser;
-            enterApp();
-            
-        } else {
-            // ВХОД
-            console.log('Попытка входа...');
-            
-            // Ищем пользователя по имени
-            const snap = await db.collection('users').where('name', '==', name).get();
-            
-            if (snap.empty) {
-                showError('Пользователь не найден!');
+            if (!name || !pass) {
+                showError('Заполните все поля!');
                 return;
             }
-            
-            const userData = snap.docs[0].data();
-            const email = userData.email;
-            
-            if (!email) {
-                showError('Ошибка: email не найден!');
+            if (pass.length < 6) {
+                showError('Пароль минимум 6 символов!');
                 return;
             }
-            
-            console.log('Найден email:', email);
-            
-            // Входим
-            await auth.signInWithEmailAndPassword(email, pass);
-            console.log('Вход выполнен');
-            
-            currentUser = auth.currentUser;
-            enterApp();
-        }
-        
-    } catch (e) {
-        console.error('Ошибка:', e);
-        console.error('Код ошибки:', e.code);
-        console.error('Сообщение:', e.message);
-        
-        // Понятные сообщения об ошибках
-        let errorMessage = e.message;
-        if (e.code === 'auth/user-not-found') {
-            errorMessage = 'Пользователь не найден. Проверьте имя или зарегистрируйтесь.';
-        } else if (e.code === 'auth/wrong-password') {
-            errorMessage = 'Неверный пароль!';
-        } else if (e.code === 'auth/email-already-in-use') {
-            errorMessage = 'Этот пользователь уже существует!';
-        } else if (e.code === 'auth/weak-password') {
-            errorMessage = 'Пароль слишком слабый! Минимум 6 символов.';
-        } else if (e.code === 'auth/network-request-failed') {
-            errorMessage = 'Ошибка сети! Проверьте подключение к интернету.';
-        }
-        
-        showError(errorMessage);
-    }
-}
+            if (name.length < 2) {
+                showError('Имя минимум 2 символа!');
+                return;
+            }
 
-function showError(msg) {
-    const el = document.getElementById('auth-error');
-    el.textContent = '❌ ' + msg;
-    el.style.display = 'block';
-    console.error('Ошибка:', msg);
-}
+            try {
+                if (isRegister) {
+                    const email = `${name}_${Date.now()}@vkclone.local`;
+                    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                    await cred.user.updateProfile({ displayName: name });
+                    
+                    await db.collection('users').doc(cred.user.uid).set({
+                        name: name,
+                        email: email,
+                        coins: 100,
+                        createdAt: new Date()
+                    });
 
-function logout() {
-    auth.signOut();
-    currentUser = null;
-    avatarCache.clear();
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    console.log('Выход выполнен');
-}
+                    await db.collection('posts').add({
+                        authorId: cred.user.uid,
+                        authorName: name,
+                        text: '👋 Привет! Добро пожаловать в VK 2011!',
+                        createdAt: new Date()
+                    });
+
+                    alert('✅ Аккаунт создан! Вы получили 100 монет.');
+                    currentUser = auth.currentUser;
+                    enterApp();
+                } else {
+                    const snap = await db.collection('users').where('name', '==', name).get();
+                    if (snap.empty) {
+                        showError('Пользователь не найден!');
+                        return;
+                    }
+                    const userData = snap.docs[0].data();
+                    const email = userData.email;
+                    if (!email) {
+                        showError('Ошибка: email не найден!');
+                        return;
+                    }
+                    await auth.signInWithEmailAndPassword(email, pass);
+                    currentUser = auth.currentUser;
+                    enterApp();
+                }
+            } catch (e) {
+                let errorMessage = e.message;
+                if (e.code === 'auth/user-not-found') errorMessage = 'Пользователь не найден. Проверьте имя или зарегистрируйтесь.';
+                else if (e.code === 'auth/wrong-password') errorMessage = 'Неверный пароль!';
+                else if (e.code === 'auth/email-already-in-use') errorMessage = 'Этот пользователь уже существует!';
+                else if (e.code === 'auth/weak-password') errorMessage = 'Пароль слишком слабый! Минимум 6 символов.';
+                else if (e.code === 'auth/network-request-failed') errorMessage = 'Ошибка сети! Проверьте подключение к интернету.';
+                showError(errorMessage);
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('auth-error');
+            el.textContent = '❌ ' + msg;
+            el.style.display = 'block';
+        }
+
+        function logout() {
+            auth.signOut();
+            currentUser = null;
+            avatarCache.clear();
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('desktop-app').style.display = 'none';
+            document.getElementById('mobile-app').style.display = 'none';
+        }
+
+        // =============================================
+        // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+        // =============================================
+        function generateAvatar(uid, name) {
+            const letter = (name || '?')[0].toUpperCase();
+            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%235E83A9'/%3E%3Ctext x='30' y='40' text-anchor='middle' fill='white' font-size='28' font-weight='bold'%3E${letter}%3C/text%3E%3C/svg%3E`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        async function getUserAvatar(uid, name) {
+            if (avatarCache.has(uid)) return avatarCache.get(uid);
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists && doc.data().photoURL) {
+                    avatarCache.set(uid, doc.data().photoURL);
+                    return doc.data().photoURL;
+                }
+            } catch (e) {}
+            const avatar = generateAvatar(uid, name);
+            avatarCache.set(uid, avatar);
+            return avatar;
+        }
 
         // =============================================
         // ВХОД В ПРИЛОЖЕНИЕ
@@ -438,7 +425,7 @@ function logout() {
                 document.getElementById('desktop-app').style.display = 'none';
                 document.getElementById('mobile-app').style.display = 'block';
                 await loadUserProfile();
-                await renderMobileWall();
+                renderMobileWall();
                 renderMobileFriends();
                 renderMobileMessages();
                 renderMobileNews();
@@ -480,7 +467,7 @@ function logout() {
         }
 
         // =============================================
-        // ОБЩИЕ ФУНКЦИИ
+        // РЕДАКТИРОВАНИЕ ПРОФИЛЯ
         // =============================================
         function toggleEditProfile() {
             const form = document.getElementById('mob-edit-form');
@@ -491,12 +478,8 @@ function logout() {
             const city = document.getElementById('edit-city').value.trim();
             const status = document.getElementById('edit-status').value.trim();
             const about = document.getElementById('edit-about').value.trim();
-            const name = document.getElementById('mob-profile-name').innerText.trim();
             
-            if (!name || name.length < 2) return alert("Имя должно быть минимум 2 символа");
-            
-            await db.collection('users').doc(currentUser.uid).update({ city, status, about, name });
-            await auth.currentUser.updateProfile({ displayName: name });
+            await db.collection('users').doc(currentUser.uid).update({ city, status, about });
             toggleEditProfile();
             loadUserProfile();
             alert("✅ Профиль обновлён!");
@@ -543,194 +526,80 @@ function logout() {
         }
 
         // =============================================
-// ПОСТЫ (БЕЗ ORDERBY — НЕТ ИНДЕКСОВ!)
-// =============================================
-async function createPost() {
-    const text = document.getElementById('post-text').value.trim();
-    if (!text) return alert('Введите текст!');
-    document.getElementById('post-text').value = '';
-    
-    try {
-        await db.collection('posts').add({
-            authorId: currentUser.uid,
-            authorName: currentUser.displayName,
-            text: text,
-            createdAt: new Date()
-        });
-        await renderWall();
-        await renderNews(); // Обновляем новости тоже
-    } catch (error) {
-        console.error('Ошибка при создании поста:', error);
-        alert('❌ Ошибка при создании поста');
-    }
-}
-
-async function renderWall() {
-    const container = document.getElementById('wall-posts');
-    
-    try {
-        const snap = await db.collection('posts')
-            .where('authorId', '==', currentUser.uid)
-            .get();
-        
-        if (snap.empty) {
-            container.innerHTML = '<div class="empty">📝 Здесь пока пусто</div>';
-            return;
-        }
-        
-        let html = '';
-        const posts = [];
-        snap.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
-        
-        posts.sort((a, b) => {
-            const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
-            const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
-            return db2 - da;
-        });
-        
-        posts.forEach(p => {
-            const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
-            const avatar = avatarCache.get(p.authorId) || getInitialsAvatar(p.authorName);
-            html += `
-                <div class="post">
-                    <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
-                    <div>
-                        <span class="name">${escapeHtml(p.authorName)}</span>
-                        <span class="date">${date}</span>
-                        <div class="text">${escapeHtml(p.text)}</div>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    } catch (error) {
-        console.error('Ошибка при загрузке постов:', error);
-        container.innerHTML = '<div class="empty">❌ Ошибка загрузки постов</div>';
-    }
-}
-
-async function renderNews() {
-    const container = document.getElementById('news-posts');
-    
-    try {
-        // Получаем друзей
-        const friendsSnap = await db.collection('friends')
-            .where('userId', '==', currentUser.uid)
-            .get();
-        
-        const friendIds = [];
-        friendsSnap.forEach(doc => friendIds.push(doc.data().friendId));
-        
-        // Если нет друзей - показываем сообщение
-        if (friendIds.length === 0) {
-            container.innerHTML = '<div class="empty">👥 Добавьте друзей, чтобы видеть их новости</div>';
-            return;
-        }
-        
-        // Получаем все посты (без фильтрации в запросе)
-        const allPostsSnap = await db.collection('posts')
-            .limit(100)
-            .get();
-        
-        // Фильтруем посты друзей на клиенте
-        const posts = [];
-        allPostsSnap.forEach(doc => {
-            const data = doc.data();
-            if (friendIds.includes(data.authorId)) {
-                posts.push({ id: doc.id, ...data });
+        // ПОСТЫ
+        // =============================================
+        async function createPostMobile() {
+            const text = document.getElementById('mob-post-text').value.trim();
+            if (!text) return alert('Введите текст!');
+            document.getElementById('mob-post-text').value = '';
+            
+            try {
+                await db.collection('posts').add({
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName,
+                    text: text,
+                    createdAt: new Date()
+                });
+                renderMobileWall();
+            } catch (error) {
+                alert('❌ Ошибка при создании поста');
             }
-        });
-        
-        if (posts.length === 0) {
-            container.innerHTML = '<div class="empty">📭 У друзей пока нет постов</div>';
-            return;
         }
-        
-        // Сортируем по дате
-        posts.sort((a, b) => {
-            const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
-            const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
-            return db2 - da;
-        });
-        
-        let html = '';
-        posts.forEach(p => {
-            const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
-            const avatar = avatarCache.get(p.authorId) || getInitialsAvatar(p.authorName);
-            html += `
-                <div class="post">
-                    <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
-                    <div>
-                        <span class="name">${escapeHtml(p.authorName)}</span>
-                        <span class="date">${date}</span>
-                        <div class="text">${escapeHtml(p.text)}</div>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    } catch (error) {
-        console.error('Ошибка при загрузке новостей:', error);
-        container.innerHTML = '<div class="empty">❌ Ошибка загрузки новостей</div>';
-    }
-}
+
+        async function createPostDesktop() {
+            const text = document.getElementById('desk-post-text').value.trim();
+            if (!text) return alert('Введите текст!');
+            document.getElementById('desk-post-text').value = '';
+            
+            try {
+                await db.collection('posts').add({
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName,
+                    text: text,
+                    createdAt: new Date()
+                });
+                renderDesktopWall();
+            } catch (error) {
+                alert('❌ Ошибка при создании поста');
+            }
+        }
 
         // =============================================
         // СТЕНА
         // =============================================
         async function renderMobileWall() {
-            if (unsubscribeWall) { unsubscribeWall(); unsubscribeWall = null; }
             const container = document.getElementById('mobile-wall-content');
             container.innerHTML = '<div class="loading">Загрузка</div>';
             
             try {
                 const snap = await db.collection('posts')
                     .where('authorId', '==', currentUser.uid)
-                    .orderBy('createdAt', 'desc')
-                    .limit(50)
                     .get();
                 
                 let html = '';
                 if (snap.empty) {
                     html = `<div class="mobile-empty"><h3>📝 Здесь пока пусто</h3><p>Напишите первый пост!</p></div>`;
                 } else {
-                    // Собираем аватарки
-                    const userIds = [];
-                    snap.forEach(doc => {
-                        const p = doc.data();
-                        if (!avatarCache.has(p.authorId)) userIds.push(p.authorId);
+                    const posts = [];
+                    snap.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+                    posts.sort((a, b) => {
+                        const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                        const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                        return db2 - da;
                     });
                     
-                    if (userIds.length > 0) {
-                        const chunks = [];
-                        for (let i = 0; i < userIds.length; i += 10) {
-                            chunks.push(userIds.slice(i, i + 10));
-                        }
-                        for (const chunk of chunks) {
-                            try {
-                                const usersSnap = await db.collection('users').where('__name__', 'in', chunk).get();
-                                usersSnap.forEach(doc => {
-                                    const data = doc.data();
-                                    const url = data.photoURL || generateAvatar(doc.id, data.name || '?');
-                                    avatarCache.set(doc.id, url);
-                                });
-                            } catch (e) {}
-                        }
-                    }
-                    
-                    snap.forEach(doc => {
-                        const p = doc.data();
-                        const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                        const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
+                    for (const p of posts) {
+                        const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
+                        const avatar = await getUserAvatar(p.authorId, p.authorName);
                         html += `<div class="mobile-post">
-                            <img src="${avatarUrl}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
+                            <img src="${avatar}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
                             <div>
                                 <span class="author">${escapeHtml(p.authorName)}</span>
                                 <span class="date">${date}</span>
                                 <div class="text">${escapeHtml(p.text)}</div>
                             </div>
                         </div>`;
-                    });
+                    }
                 }
                 container.innerHTML = html;
             } catch (e) {
@@ -740,17 +609,42 @@ async function renderNews() {
 
         async function renderDesktopWall() {
             const container = document.getElementById('desktop-wall-content');
+            container.innerHTML = '<div class="loading">Загрузка</div>';
+            
             try {
-                const snap = await db.collection('posts').where('authorId', '==', currentUser.uid).orderBy('createdAt', 'desc').limit(50).get();
+                const snap = await db.collection('posts')
+                    .where('authorId', '==', currentUser.uid)
+                    .get();
+                
                 let html = '';
-                if (snap.empty) html = `<div style="text-align:center;padding:20px;color:#777;">📝 Здесь пока пусто</div>`;
-                else snap.forEach(doc => {
-                    const p = doc.data();
-                    const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                    html += `<div class="desktop-post"><img src="${await getUserAvatar(p.authorId, p.authorName)}"><div><span class="author">${escapeHtml(p.authorName)}</span><span class="date">${date}</span><div class="text">${escapeHtml(p.text)}</div></div></div>`;
-                });
+                if (snap.empty) {
+                    html = `<div style="text-align:center;padding:20px;color:#777;">📝 Здесь пока пусто</div>`;
+                } else {
+                    const posts = [];
+                    snap.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+                    posts.sort((a, b) => {
+                        const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                        const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                        return db2 - da;
+                    });
+                    
+                    for (const p of posts) {
+                        const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
+                        const avatar = await getUserAvatar(p.authorId, p.authorName);
+                        html += `<div class="desktop-post">
+                            <img src="${avatar}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
+                            <div>
+                                <span class="author">${escapeHtml(p.authorName)}</span>
+                                <span class="date">${date}</span>
+                                <div class="text">${escapeHtml(p.text)}</div>
+                            </div>
+                        </div>`;
+                    }
+                }
                 container.innerHTML = html;
-            } catch (e) { container.innerHTML = `<div style="padding:20px;color:red;">❌ Ошибка загрузки</div>`; }
+            } catch (e) {
+                container.innerHTML = `<div style="padding:20px;color:red;">❌ Ошибка: ${e.message}</div>`;
+            }
         }
 
         // =============================================
@@ -761,75 +655,63 @@ async function renderNews() {
             container.innerHTML = '<div class="loading">Загрузка</div>';
             
             try {
-                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-                let ids = [];
-                snap.forEach(doc => ids.push(doc.data().friendId));
+                const friendsSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+                const friendIds = [];
+                friendsSnap.forEach(doc => friendIds.push(doc.data().friendId));
                 
-                if (!ids.length) {
+                if (!friendIds.length) {
                     container.innerHTML = `<div class="mobile-empty"><h3>👥 У вас пока нет друзей</h3></div>`;
                     return;
                 }
                 
-                const chunk = ids.slice(0, 10);
-                const postsSnap = await db.collection('posts')
-                    .where('authorId', 'in', chunk)
-                    .orderBy('createdAt', 'desc')
-                    .limit(50)
-                    .get();
+                const allPostsSnap = await db.collection('posts').limit(100).get();
+                const posts = [];
+                allPostsSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (friendIds.includes(data.authorId)) {
+                        posts.push({ id: doc.id, ...data });
+                    }
+                });
+                
+                if (posts.length === 0) {
+                    container.innerHTML = `<div class="mobile-empty"><h3>📭 У друзей пока нет постов</h3></div>`;
+                    return;
+                }
+                
+                posts.sort((a, b) => {
+                    const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                    const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                    return db2 - da;
+                });
                 
                 let html = '';
-                if (postsSnap.empty) {
-                    html = `<div class="mobile-empty"><h3>📭 У друзей пока нет постов</h3></div>`;
-                } else {
-                    postsSnap.forEach(doc => {
-                        const p = doc.data();
-                        const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                        const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
-                        html += `<div class="mobile-post">
-                            <img src="${avatarUrl}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
-                            <div>
-                                <span class="author">${escapeHtml(p.authorName)}</span>
-                                <span class="date">${date}</span>
-                                <div class="text">${escapeHtml(p.text)}</div>
-                            </div>
-                        </div>`;
-                    });
+                for (const p of posts) {
+                    const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
+                    const avatar = await getUserAvatar(p.authorId, p.authorName);
+                    html += `<div class="mobile-post">
+                        <img src="${avatar}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
+                        <div>
+                            <span class="author">${escapeHtml(p.authorName)}</span>
+                            <span class="date">${date}</span>
+                            <div class="text">${escapeHtml(p.text)}</div>
+                        </div>
+                    </div>`;
                 }
                 container.innerHTML = html;
             } catch (e) {
-                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка</div>`;
+                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка: ${e.message}</div>`;
             }
-        }
-
-        async function renderDesktopNews() {
-            const container = document.getElementById('desk-news-content');
-            try {
-                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-                let ids = [];
-                snap.forEach(doc => ids.push(doc.data().friendId));
-                if (!ids.length) {
-                    container.innerHTML = `<div style="padding:20px;color:#777;">👥 У вас пока нет друзей</div>`;
-                    return;
-                }
-                const chunk = ids.slice(0, 10);
-                const postsSnap = await db.collection('posts').where('authorId', 'in', chunk).orderBy('createdAt', 'desc').limit(50).get();
-                let html = '';
-                postsSnap.forEach(doc => {
-                    const p = doc.data();
-                    const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                    html += `<div class="desktop-post"><img src="${await getUserAvatar(p.authorId, p.authorName)}"><div><span class="author">${escapeHtml(p.authorName)}</span><span class="date">${date}</span><div class="text">${escapeHtml(p.text)}</div></div></div>`;
-                });
-                container.innerHTML = html || `<div style="padding:20px;color:#777;">📭 У друзей пока нет постов</div>`;
-            } catch (e) { container.innerHTML = `<div style="padding:20px;color:red;">❌ Ошибка</div>`; }
         }
 
         // =============================================
         // ДРУЗЬЯ
         // =============================================
-        async function searchUsers(device) {
-            const inputId = device === 'desktop' ? 'desk-search-input' : 'mob-search-input';
-            const query = document.getElementById(inputId).value.toLowerCase();
-            if (query.length < 2) return;
+        async function searchUsersMobile() {
+            const query = document.getElementById('mob-search-input').value.toLowerCase();
+            if (query.length < 2) {
+                renderMobileFriends();
+                return;
+            }
             
             try {
                 const snapshot = await db.collection('users').get();
@@ -838,15 +720,109 @@ async function renderNews() {
                 friendsSnap.forEach(doc => myFriends.add(doc.data().friendId));
                 
                 let html = '';
-                snapshot.forEach(doc => {
+                let found = 0;
+                for (const doc of snapshot.docs) {
                     const u = doc.data();
-                    if (u.name.toLowerCase().includes(query) && doc.id !== currentUser.uid) {
+                    if (doc.id === currentUser.uid) continue;
+                    if (u.name && u.name.toLowerCase().includes(query)) {
+                        found++;
                         const isFriend = myFriends.has(doc.id);
+                        const avatar = await getUserAvatar(doc.id, u.name);
                         const btn = isFriend ? `<span style="color:#777;">✅ В друзьях</span>` : `<button class="add-btn" onclick="addFriend('${doc.id}', '${escapeHtml(u.name)}')">➕ Добавить</button>`;
-                        html += `<div class="friend-item"><div class="friend-info"><img src="${await getUserAvatar(doc.id, u.name)}"><div><b>${escapeHtml(u.name)}</b></div></div>${btn}</div>`;
+                        html += `<div class="friend-item">
+                            <div class="friend-info">
+                                <img src="${avatar}" onerror="this.src='${generateAvatar(doc.id, u.name)}'">
+                                <div><b>${escapeHtml(u.name)}</b></div>
+                            </div>
+                            ${btn}
+                        </div>`;
                     }
-                });
-                document.getElementById(device === 'desktop' ? 'desk-search-results' : 'mobile-friends-list').innerHTML = html || `<div style="padding:10px;color:#777;">🔍 Ничего не найдено</div>`;
+                }
+                document.getElementById('mobile-friends-list').innerHTML = html || `<div style="padding:10px;color:#777;">🔍 Ничего не найдено</div>`;
+            } catch (e) {}
+        }
+
+        async function searchUsersDesktop() {
+            const query = document.getElementById('desk-search-input').value.toLowerCase();
+            if (query.length < 2) {
+                document.getElementById('desk-search-results').innerHTML = '<div style="color:#777;padding:10px;">🔍 Введите имя для поиска</div>';
+                return;
+            }
+            
+            try {
+                const snapshot = await db.collection('users').get();
+                const friendsSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+                const myFriends = new Set();
+                friendsSnap.forEach(doc => myFriends.add(doc.data().friendId));
+                
+                let html = '';
+                for (const doc of snapshot.docs) {
+                    const u = doc.data();
+                    if (doc.id === currentUser.uid) continue;
+                    if (u.name && u.name.toLowerCase().includes(query)) {
+                        const isFriend = myFriends.has(doc.id);
+                        const avatar = await getUserAvatar(doc.id, u.name);
+                        const btn = isFriend ? `<span style="color:#777;">✅ В друзьях</span>` : `<button class="add-btn" onclick="addFriend('${doc.id}', '${escapeHtml(u.name)}')">➕ Добавить</button>`;
+                        html += `<div class="friend-item">
+                            <div class="friend-info">
+                                <img src="${avatar}" onerror="this.src='${generateAvatar(doc.id, u.name)}'">
+                                <div><b>${escapeHtml(u.name)}</b></div>
+                            </div>
+                            ${btn}
+                        </div>`;
+                    }
+                }
+                document.getElementById('desk-search-results').innerHTML = html || `<div style="padding:10px;color:#777;">🔍 Ничего не найдено</div>`;
+            } catch (e) {}
+        }
+
+        async function renderMobileFriends() {
+            const container = document.getElementById('mobile-friends-list');
+            try {
+                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+                let html = '';
+                if (snap.empty) {
+                    html = `<div class="mobile-empty"><h3>👥 Список друзей пуст</h3></div>`;
+                } else {
+                    for (const doc of snap.docs) {
+                        const f = doc.data();
+                        const friendId = f.friendId;
+                        const avatar = await getUserAvatar(friendId, f.friendName);
+                        html += `<div class="friend-item" onclick="openChat('${friendId}')">
+                            <div class="friend-info">
+                                <img src="${avatar}" onerror="this.src='${generateAvatar(friendId, f.friendName)}'">
+                                <div><b>${escapeHtml(f.friendName || 'Друг')}</b></div>
+                            </div>
+                        </div>`;
+                    }
+                }
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка</div>`;
+            }
+        }
+
+        async function renderDesktopFriends() {
+            const container = document.getElementById('desk-friends-list');
+            try {
+                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+                let html = '';
+                if (snap.empty) {
+                    html = `<div style="color:#777; padding:10px;">👥 У вас пока нет друзей.</div>`;
+                } else {
+                    for (const doc of snap.docs) {
+                        const f = doc.data();
+                        const friendId = f.friendId;
+                        const avatar = await getUserAvatar(friendId, f.friendName);
+                        html += `<div class="friend-item" onclick="openChat('${friendId}')" style="cursor:pointer;">
+                            <div class="friend-info">
+                                <img src="${avatar}" onerror="this.src='${generateAvatar(friendId, f.friendName)}'">
+                                <div><b>${escapeHtml(f.friendName || 'Друг')}</b></div>
+                            </div>
+                        </div>`;
+                    }
+                }
+                container.innerHTML = html;
             } catch (e) {}
         }
 
@@ -859,37 +835,15 @@ async function renderNews() {
             await db.collection('friends').add({ userId: currentUser.uid, friendId: friendId, friendName: friendName });
             await db.collection('friends').add({ userId: friendId, friendId: currentUser.uid, friendName: currentUser.displayName });
             alert("✅ Друг добавлен!");
-            searchUsers(window.innerWidth > 768 ? 'desktop' : 'mobile');
-        }
-
-        async function renderMobileFriends() {
-            const container = document.getElementById('mobile-friends-list');
-            try {
-                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-                let html = '';
-                if (snap.empty) html = `<div class="mobile-empty"><h3>👥 Список друзей пуст</h3></div>`;
-                else snap.forEach(doc => {
-                    const f = doc.data();
-                    const friendId = f.friendId;
-                    html += `<div class="friend-item" onclick="openChat('${friendId}')"><div class="friend-info"><img src="${await getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
-                });
-                container.innerHTML = html;
-            } catch (e) {}
-        }
-
-        async function renderDesktopFriends() {
-            const container = document.getElementById('desk-friends-list');
-            try {
-                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-                let html = '';
-                if (snap.empty) html = `<div style="color:#777; padding:10px;">👥 У вас пока нет друзей.</div>`;
-                else snap.forEach(doc => {
-                    const f = doc.data();
-                    const friendId = f.friendId;
-                    html += `<div class="friend-item" onclick="openChat('${friendId}')" style="cursor:pointer;"><div class="friend-info"><img src="${await getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
-                });
-                container.innerHTML = html;
-            } catch (e) {}
+            
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                searchUsersMobile();
+                renderMobileFriends();
+            } else {
+                searchUsersDesktop();
+                renderDesktopFriends();
+            }
         }
 
         // =============================================
@@ -898,11 +852,13 @@ async function renderNews() {
         async function openChat(friendId) {
             document.getElementById('chat-messages-box').innerHTML = '<div style="padding:10px;color:#777;text-align:center;">⏳ Загрузка чата...</div>';
             document.getElementById('chat-interface').style.display = 'flex';
+            
             const doc = await db.collection('users').doc(friendId).get();
             if (!doc.exists) {
                 document.getElementById('chat-interface').style.display = 'none';
                 return alert("❌ Пользователь не найден");
             }
+            
             currentChatPartnerId = friendId;
             currentChatPartnerName = doc.data().name;
             document.getElementById('chat-partner-name').innerText = currentChatPartnerName;
@@ -911,21 +867,32 @@ async function renderNews() {
 
         function closeChat() {
             document.getElementById('chat-interface').style.display = 'none';
-            if (unsubscribeChat) unsubscribeChat();
+            if (unsubscribeChat) {
+                unsubscribeChat();
+                unsubscribeChat = null;
+            }
             currentChatPartnerId = null;
         }
 
         function renderChatMessages() {
             const box = document.getElementById('chat-messages-box');
-            if (unsubscribeChat) unsubscribeChat();
+            if (unsubscribeChat) {
+                unsubscribeChat();
+                unsubscribeChat = null;
+            }
+            
             const chatId = [currentUser.uid, currentChatPartnerId].sort().join('_');
-            unsubscribeChat = db.collection('messages').where('chatId', '==', chatId).orderBy('createdAt')
+            unsubscribeChat = db.collection('messages')
+                .where('chatId', '==', chatId)
+                .orderBy('createdAt')
                 .onSnapshot(snapshot => {
                     if (snapshot.empty) {
                         box.innerHTML = '<div style="padding:10px;color:#777;text-align:center;">💬 Начните общение</div>';
                         return;
                     }
-                    const wasScrolledToBottom = box.scrollHeight - box.scrollTop === box.clientHeight;
+                    
+                    const wasScrolledToBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 10;
+                    
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const m = change.doc.data();
@@ -935,7 +902,10 @@ async function renderNews() {
                             box.insertAdjacentHTML('beforeend', msgHtml);
                         }
                     });
-                    if (wasScrolledToBottom) box.scrollTop = box.scrollHeight;
+                    
+                    if (wasScrolledToBottom) {
+                        box.scrollTop = box.scrollHeight;
+                    }
                 });
         }
 
@@ -944,13 +914,19 @@ async function renderNews() {
             const text = input.value.trim();
             if (!text || !currentChatPartnerId) return;
             input.value = '';
+            
             const chatId = [currentUser.uid, currentChatPartnerId].sort().join('_');
             try {
                 await db.collection('messages').add({
-                    chatId: chatId, fromId: currentUser.uid, toId: currentChatPartnerId,
-                    text: text, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    chatId: chatId,
+                    fromId: currentUser.uid,
+                    toId: currentChatPartnerId,
+                    text: text,
+                    createdAt: new Date()
                 });
-            } catch (e) { alert("❌ Ошибка"); }
+            } catch (e) {
+                alert("❌ Ошибка отправки сообщения");
+            }
         }
 
         async function renderMobileMessages() {
@@ -958,14 +934,25 @@ async function renderNews() {
             try {
                 const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
                 let html = '';
-                if (snap.empty) html = `<div class="mobile-empty"><h3>💬 Нет сообщений</h3></div>`;
-                else snap.forEach(doc => {
-                    const f = doc.data();
-                    const friendId = f.friendId;
-                    html += `<div class="chat-item" onclick="openChat('${friendId}')"><div class="friend-info"><img src="${await getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
-                });
+                if (snap.empty) {
+                    html = `<div class="mobile-empty"><h3>💬 Нет сообщений</h3></div>`;
+                } else {
+                    for (const doc of snap.docs) {
+                        const f = doc.data();
+                        const friendId = f.friendId;
+                        const avatar = await getUserAvatar(friendId, f.friendName);
+                        html += `<div class="chat-item" onclick="openChat('${friendId}')">
+                            <div class="friend-info">
+                                <img src="${avatar}" onerror="this.src='${generateAvatar(friendId, f.friendName)}'">
+                                <div><b>${escapeHtml(f.friendName || 'Друг')}</b></div>
+                            </div>
+                        </div>`;
+                    }
+                }
                 container.innerHTML = html;
-            } catch (e) {}
+            } catch (e) {
+                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка</div>`;
+            }
         }
 
         async function renderDesktopMessages() {
@@ -973,12 +960,19 @@ async function renderNews() {
             try {
                 const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
                 let html = '';
-                if (snap.empty) html = `<div style="color:#777; padding:10px;">💬 Нет активных чатов.</div>`;
-                else snap.forEach(doc => {
-                    const f = doc.data();
-                    const friendId = f.friendId;
-                    html += `<div class="chat-item" onclick="openChat('${friendId}')" style="cursor:pointer;padding:10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ddd;"><img src="${await getUserAvatar(friendId, f.friendName)}" style="width:40px;height:40px;border-radius:50%;"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div>`;
-                });
+                if (snap.empty) {
+                    html = `<div style="color:#777; padding:10px;">💬 Нет активных чатов.</div>`;
+                } else {
+                    for (const doc of snap.docs) {
+                        const f = doc.data();
+                        const friendId = f.friendId;
+                        const avatar = await getUserAvatar(friendId, f.friendName);
+                        html += `<div class="chat-item" onclick="openChat('${friendId}')" style="cursor:pointer;padding:10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ddd;">
+                            <img src="${avatar}" onerror="this.src='${generateAvatar(friendId, f.friendName)}'" style="width:40px;height:40px;border-radius:50%;">
+                            <div><b>${escapeHtml(f.friendName || 'Друг')}</b></div>
+                        </div>`;
+                    }
+                }
                 container.innerHTML = html;
             } catch (e) {}
         }
@@ -1009,9 +1003,12 @@ async function renderNews() {
         async function buyGift(giftId) {
             const userData = (await db.collection('users').doc(currentUser.uid).get()).data();
             if (!userData) return;
+            
             const gift = GIFTS.find(g => g.id === giftId);
             if (!gift) return alert("❌ Подарок не найден!");
-            if (userData.coins < gift.price) return alert(`❌ Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
+            if (userData.coins < gift.price) {
+                return alert(`❌ Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
+            }
 
             const recipientName = prompt(`🎁 Кому подарить ${gift.name}? (Введите имя)`);
             if (!recipientName) return;
@@ -1030,7 +1027,7 @@ async function renderNews() {
                 toId: recipientId,
                 toName: recipientName,
                 giftId: giftId,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: new Date()
             });
 
             alert(`✅ ${gift.name} успешно подарен ${recipientName}!`);
@@ -1039,26 +1036,36 @@ async function renderNews() {
 
         async function renderMyGifts() {
             const container = document.getElementById('mob-profile-info');
-            const snap = await db.collection('gifts').where('toId', '==', currentUser.uid).orderBy('createdAt', 'desc').get();
+            const snap = await db.collection('gifts')
+                .where('toId', '==', currentUser.uid)
+                .get();
             
             let html = `<div style="margin-top:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid #eee;">
                 <h4 style="margin-bottom:8px;">💝 Мои подарки</h4>
                 <div>`;
+            
             if (snap.empty) {
                 html += `<div style="color:#777;font-size:13px;padding:10px 0;">У вас пока нет подарков 😢</div>`;
             } else {
-                snap.forEach(doc => {
-                    const g = doc.data();
+                const gifts = [];
+                snap.forEach(doc => gifts.push({ id: doc.id, ...doc.data() }));
+                gifts.sort((a, b) => {
+                    const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                    const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                    return db2 - da;
+                });
+                
+                for (const g of gifts) {
                     const gift = GIFTS.find(x => x.id === g.giftId);
                     const icon = gift ? gift.name.split(' ')[0] : '🎁';
                     html += `
                         <div class="my-gift-item">
                             <span style="font-size:24px;">${icon}</span>
                             <span class="gift-from">от ${escapeHtml(g.fromName)}</span>
-                            ${!g.returned ? `<button class="return-btn" onclick="returnCoins('${doc.id}', '${g.fromId}')">↩️ Вернуть</button>` : '<span style="color:#999;font-size:11px;">✅ Возвращено</span>'}
+                            ${!g.returned ? `<button class="return-btn" onclick="returnCoins('${g.id}', '${g.fromId}')">↩️ Вернуть</button>` : '<span style="color:#999;font-size:11px;">✅ Возвращено</span>'}
                         </div>
                     `;
-                });
+                }
             }
             html += `</div></div>`;
             container.insertAdjacentHTML('beforeend', html);
@@ -1072,8 +1079,11 @@ async function renderNews() {
 
             const gift = GIFTS.find(g => g.id === doc.data().giftId);
             if (!gift) return alert("❌ Ошибка!");
+            
             const myData = (await db.collection('users').doc(currentUser.uid).get()).data();
-            if (myData.coins < gift.price) return alert(`❌ Нужно ${gift.price} монет`);
+            if (myData.coins < gift.price) {
+                return alert(`❌ Нужно ${gift.price} монет`);
+            }
 
             await db.collection('users').doc(fromId).update({
                 coins: firebase.firestore.FieldValue.increment(gift.price)
@@ -1098,12 +1108,10 @@ async function renderNews() {
             try {
                 const giftsSnap = await db.collection('gifts')
                     .where('toId', '==', currentUser.uid)
-                    .orderBy('createdAt', 'desc')
                     .get();
                 
                 const sentSnap = await db.collection('gifts')
                     .where('fromId', '==', currentUser.uid)
-                    .orderBy('createdAt', 'desc')
                     .get();
                 
                 let html = '';
@@ -1114,11 +1122,18 @@ async function renderNews() {
                 if (giftsSnap.empty) {
                     html += `<div style="color:#777;padding:10px;text-align:center;">У вас пока нет подарков 😢</div>`;
                 } else {
-                    giftsSnap.forEach(doc => {
-                        const g = doc.data();
+                    const gifts = [];
+                    giftsSnap.forEach(doc => gifts.push({ id: doc.id, ...doc.data() }));
+                    gifts.sort((a, b) => {
+                        const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                        const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                        return db2 - da;
+                    });
+                    
+                    for (const g of gifts) {
                         const gift = GIFTS.find(x => x.id === g.giftId);
                         const icon = gift ? gift.name.split(' ')[0] : '🎁';
-                        const date = g.createdAt ? g.createdAt.toDate().toLocaleString('ru-RU') : 'Недавно';
+                        const date = g.createdAt ? new Date(g.createdAt.toDate ? g.createdAt.toDate() : g.createdAt).toLocaleString('ru-RU') : 'Недавно';
                         html += `
                             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;">
                                 <span style="font-size:24px;">${icon}</span>
@@ -1126,10 +1141,10 @@ async function renderNews() {
                                     <div><b>от ${escapeHtml(g.fromName)}</b></div>
                                     <div style="font-size:12px;color:#999;">${date}</div>
                                 </div>
-                                ${!g.returned ? `<button onclick="returnCoins('${doc.id}', '${g.fromId}')" style="background:#5E83A9;color:#fff;border:none;padding:4px 12px;border-radius:4px;font-size:11px;">↩️ Вернуть</button>` : '<span style="color:#999;font-size:11px;">✅ Возвращено</span>'}
+                                ${!g.returned ? `<button onclick="returnCoins('${g.id}', '${g.fromId}')" style="background:#5E83A9;color:#fff;border:none;padding:4px 12px;border-radius:4px;font-size:11px;">↩️ Вернуть</button>` : '<span style="color:#999;font-size:11px;">✅ Возвращено</span>'}
                             </div>
                         `;
-                    });
+                    }
                 }
                 html += `</div>`;
                 
@@ -1139,11 +1154,18 @@ async function renderNews() {
                 if (sentSnap.empty) {
                     html += `<div style="color:#777;padding:10px;text-align:center;">Вы ещё никому не дарили подарки</div>`;
                 } else {
-                    sentSnap.forEach(doc => {
-                        const g = doc.data();
+                    const sent = [];
+                    sentSnap.forEach(doc => sent.push({ id: doc.id, ...doc.data() }));
+                    sent.sort((a, b) => {
+                        const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                        const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                        return db2 - da;
+                    });
+                    
+                    for (const g of sent) {
                         const gift = GIFTS.find(x => x.id === g.giftId);
                         const icon = gift ? gift.name.split(' ')[0] : '🎁';
-                        const date = g.createdAt ? g.createdAt.toDate().toLocaleString('ru-RU') : 'Недавно';
+                        const date = g.createdAt ? new Date(g.createdAt.toDate ? g.createdAt.toDate() : g.createdAt).toLocaleString('ru-RU') : 'Недавно';
                         html += `
                             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;">
                                 <span style="font-size:24px;">${icon}</span>
@@ -1153,7 +1175,7 @@ async function renderNews() {
                                 </div>
                             </div>
                         `;
-                    });
+                    }
                 }
                 html += `</div>`;
                 
@@ -1174,8 +1196,14 @@ async function renderNews() {
         // НАВИГАЦИЯ
         // =============================================
         function switchMobTab(tab) {
-            if (unsubscribeChat) unsubscribeChat();
-            if (unsubscribeWall) unsubscribeWall();
+            if (unsubscribeChat) {
+                unsubscribeChat();
+                unsubscribeChat = null;
+            }
+            if (unsubscribeWall) {
+                unsubscribeWall();
+                unsubscribeWall = null;
+            }
             
             document.querySelectorAll('.mobile-view-container').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.mobile-tab-btn').forEach(el => el.classList.remove('active'));
@@ -1188,16 +1216,28 @@ async function renderNews() {
             const titles = { wall: 'Моя Страница', news: 'Новости', msg: 'Сообщения', friends: 'Друзья', gifts: 'Подарки' };
             document.getElementById('mob-header-title').innerText = titles[tab] || 'VK 2011';
             
-            if (tab === 'wall') { loadUserProfile(); renderMobileWall(); } 
-            else if (tab === 'friends') renderMobileFriends();
-            else if (tab === 'msg') renderMobileMessages();
-            else if (tab === 'news') renderMobileNews();
-            else if (tab === 'gifts') renderMobileGifts();
+            if (tab === 'wall') { 
+                loadUserProfile(); 
+                renderMobileWall(); 
+            } else if (tab === 'friends') {
+                renderMobileFriends();
+            } else if (tab === 'msg') {
+                renderMobileMessages();
+            } else if (tab === 'news') {
+                renderMobileNews();
+            } else if (tab === 'gifts') {
+                renderMobileGifts();
+            }
         }
 
         function showDeskPage(page) {
-            ['wall','news','friends','search','messages','gifts'].forEach(p => document.getElementById('desk-page-' + p).style.display = 'none');
-            document.getElementById('desk-page-' + page).style.display = 'block';
+            ['wall','news','friends','search','messages','gifts'].forEach(p => {
+                const el = document.getElementById('desk-page-' + p);
+                if (el) el.style.display = 'none';
+            });
+            const target = document.getElementById('desk-page-' + page);
+            if (target) target.style.display = 'block';
+            
             if (page === 'wall') renderDesktopWall();
             else if (page === 'news') renderDesktopNews();
             else if (page === 'friends') renderDesktopFriends();
