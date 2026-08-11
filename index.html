@@ -291,87 +291,141 @@
         ];
 
         // =============================================
-        // АВТОРИЗАЦИЯ
-        // =============================================
-        function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
-            document.getElementById('auth-title').innerText = isRegisterMode ? 'Регистрация' : 'Вход';
-            document.getElementById('auth-btn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
-            document.getElementById('auth-error').style.display = 'none';
-        }
+// АВТОРИЗАЦИЯ
+// =============================================
+function toggleAuth() {
+    isRegister = !isRegister;
+    document.getElementById('auth-title').textContent = isRegister ? 'Регистрация' : 'Вход';
+    document.getElementById('auth-btn').textContent = isRegister ? 'Зарегистрироваться' : 'Войти';
+    document.getElementById('auth-error').style.display = 'none';
+}
 
-        async function handleAuth() {
-            const name = document.getElementById('auth-name').value.trim();
-            const pass = document.getElementById('auth-pass').value.trim();
-            document.getElementById('auth-error').style.display = 'none';
+async function handleAuth() {
+    const name = document.getElementById('auth-name').value.trim();
+    const pass = document.getElementById('auth-pass').value.trim();
+    const errorEl = document.getElementById('auth-error');
+    errorEl.style.display = 'none';
 
-            if(!name || !pass) return showAuthError("Заполните все поля!");
-            if(pass.length < 6) return showAuthError("Пароль должен быть минимум 6 символов!");
-            if(name.length < 2) return showAuthError("Имя должно быть минимум 2 символа!");
+    // Валидация
+    if (!name || !pass) {
+        showError('Заполните все поля!');
+        return;
+    }
+    if (pass.length < 6) {
+        showError('Пароль минимум 6 символов!');
+        return;
+    }
+    if (name.length < 2) {
+        showError('Имя минимум 2 символа!');
+        return;
+    }
 
-            try {
-                if (isRegisterMode) {
-                    const email = `${name}_${Date.now()}@vkclone.local`;
-                    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-                    await cred.user.updateProfile({ displayName: name });
-                    await db.collection('users').doc(cred.user.uid).set({
-                        name: name,
-                        email: email,
-                        city: "",
-                        status: "",
-                        about: "",
-                        photoURL: "",
-                        coins: 100,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    // Создаем приветственный пост
-                    await db.collection('posts').add({
-                        authorName: name,
-                        authorId: cred.user.uid,
-                        text: "👋 Привет! Это мой первый пост в VK 2011!",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    alert("✅ Аккаунт создан! Вы получили 100 монет.");
-                    currentUser = auth.currentUser;
-                    enterApp();
-                    return;
-                } 
+    try {
+        console.log('Начинаем процесс:', isRegister ? 'Регистрация' : 'Вход');
+        
+        if (isRegister) {
+            // РЕГИСТРАЦИЯ
+            console.log('Попытка регистрации...');
+            const email = `${name}_${Date.now()}@vkclone.local`;
+            
+            // Создаем пользователя
+            const cred = await auth.createUserWithEmailAndPassword(email, pass);
+            console.log('Пользователь создан:', cred.user.uid);
+            
+            // Обновляем профиль
+            await cred.user.updateProfile({ displayName: name });
+            console.log('Профиль обновлен');
+            
+            // Создаем запись в Firestore
+            await db.collection('users').doc(cred.user.uid).set({
+                name: name,
+                email: email,
+                coins: 100,
+                createdAt: new Date()
+            });
+            console.log('Запись в Firestore создана');
 
-                const snap = await db.collection('users').where('name', '==', name).get();
-                if (!snap.empty) {
-                    const userData = snap.docs[0].data();
-                    const foundEmail = userData.email;
-                    if (foundEmail) {
-                        const cred = await auth.signInWithEmailAndPassword(foundEmail, pass);
-                        currentUser = auth.currentUser;
-                        enterApp();
-                        return;
-                    }
-                }
-                return showAuthError("❌ Пользователь не найден.");
+            // Создаем приветственный пост
+            await db.collection('posts').add({
+                authorId: cred.user.uid,
+                authorName: name,
+                text: '👋 Привет! Добро пожаловать в VK 2011!',
+                createdAt: new Date()
+            });
+            console.log('Приветственный пост создан');
 
-            } catch (e) {
-                if (e.code === 'auth/user-not-found') return showAuthError("❌ Неверный логин!");
-                if (e.code === 'auth/wrong-password') return showAuthError("❌ Неверный пароль!");
-                return showAuthError("❌ Ошибка: " + e.message);
+            alert('✅ Аккаунт создан! Вы получили 100 монет.');
+            currentUser = auth.currentUser;
+            enterApp();
+            
+        } else {
+            // ВХОД
+            console.log('Попытка входа...');
+            
+            // Ищем пользователя по имени
+            const snap = await db.collection('users').where('name', '==', name).get();
+            
+            if (snap.empty) {
+                showError('Пользователь не найден!');
+                return;
             }
+            
+            const userData = snap.docs[0].data();
+            const email = userData.email;
+            
+            if (!email) {
+                showError('Ошибка: email не найден!');
+                return;
+            }
+            
+            console.log('Найден email:', email);
+            
+            // Входим
+            await auth.signInWithEmailAndPassword(email, pass);
+            console.log('Вход выполнен');
+            
+            currentUser = auth.currentUser;
+            enterApp();
         }
+        
+    } catch (e) {
+        console.error('Ошибка:', e);
+        console.error('Код ошибки:', e.code);
+        console.error('Сообщение:', e.message);
+        
+        // Понятные сообщения об ошибках
+        let errorMessage = e.message;
+        if (e.code === 'auth/user-not-found') {
+            errorMessage = 'Пользователь не найден. Проверьте имя или зарегистрируйтесь.';
+        } else if (e.code === 'auth/wrong-password') {
+            errorMessage = 'Неверный пароль!';
+        } else if (e.code === 'auth/email-already-in-use') {
+            errorMessage = 'Этот пользователь уже существует!';
+        } else if (e.code === 'auth/weak-password') {
+            errorMessage = 'Пароль слишком слабый! Минимум 6 символов.';
+        } else if (e.code === 'auth/network-request-failed') {
+            errorMessage = 'Ошибка сети! Проверьте подключение к интернету.';
+        }
+        
+        showError(errorMessage);
+    }
+}
 
-        function showAuthError(msg) {
-            const el = document.getElementById('auth-error');
-            el.innerText = msg; el.style.display = 'block';
-        }
+function showError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = '❌ ' + msg;
+    el.style.display = 'block';
+    console.error('Ошибка:', msg);
+}
 
-        function logout() {
-            if (unsubscribeChat) unsubscribeChat();
-            if (unsubscribeWall) unsubscribeWall();
-            auth.signOut();
-            currentUser = null;
-            avatarCache.clear();
-            location.reload();
-        }
+function logout() {
+    auth.signOut();
+    currentUser = null;
+    avatarCache.clear();
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    console.log('Выход выполнен');
+}
 
         // =============================================
         // ВХОД В ПРИЛОЖЕНИЕ
