@@ -90,7 +90,6 @@
 
         #offline-banner { display: none; background: #d9534f; color: white; text-align: center; padding: 5px; font-size: 12px; position: sticky; top: 44px; z-index: 101; }
 
-        /* Стили для подарков */
         .gift-item { display: inline-block; text-align: center; padding: 8px; margin: 5px; background: #f9f9f9; border-radius: 8px; cursor: pointer; border: 1px solid #eee; min-width: 70px; }
         .gift-item:hover { background: #e8e8e8; }
         .gift-item img { width: 40px; height: 40px; display: block; margin: 0 auto; }
@@ -287,7 +286,6 @@
         let isRegisterMode = false;
         const avatarCache = new Map();
 
-        // Список подарков
         const GIFTS = [
             { id: 'rose', name: '🌹 Роза', price: 10 },
             { id: 'bear', name: '🧸 Мишка', price: 15 },
@@ -296,7 +294,7 @@
         ];
 
         // =============================================
-        // АВТОРИЗАЦИЯ (УПРОЩЕННАЯ И СТАБИЛЬНАЯ)
+        // АВТОРИЗАЦИЯ
         // =============================================
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -335,7 +333,6 @@
                     return;
                 } 
 
-                // ВХОД
                 const snap = await db.collection('users').where('name', '==', name).get();
                 if (!snap.empty) {
                     const userData = snap.docs[0].data();
@@ -352,7 +349,6 @@
             } catch (e) {
                 if (e.code === 'auth/user-not-found') return showAuthError("❌ Неверный логин!");
                 if (e.code === 'auth/wrong-password') return showAuthError("❌ Неверный пароль!");
-                if (e.code === 'auth/email-already-in-use') return showAuthError("❌ Имя занято!");
                 return showAuthError("❌ Ошибка: " + e.message);
             }
         }
@@ -383,7 +379,15 @@
                 document.getElementById('desktop-app').style.display = 'none';
                 document.getElementById('mobile-app').style.display = 'block';
                 await loadUserProfile();
-                switchMobTab('wall');
+                // Показываем стену сразу
+                renderMobileWall();
+                // Фоново загружаем остальное
+                setTimeout(() => {
+                    renderMobileFriends();
+                    renderMobileMessages();
+                    renderMobileNews();
+                    renderMobileGifts();
+                }, 100);
             } else {
                 document.getElementById('desktop-app').style.display = 'block';
                 document.getElementById('mobile-app').style.display = 'none';
@@ -393,7 +397,7 @@
         }
 
         // =============================================
-        // ЗАГРУЗКА ПРОФИЛЯ
+        // ЗАГРУЗКА ПРОФИЛЯ (БЫСТРАЯ)
         // =============================================
         async function loadUserProfile() {
             const doc = await db.collection('users').doc(currentUser.uid).get();
@@ -401,12 +405,13 @@
                 const data = doc.data();
                 document.getElementById('mob-profile-name').innerText = data.name || currentUser.displayName;
                 
-                let avatarUrl = data.photoURL;
+                // Аватарка — мгновенно из кэша или генерируем
+                let avatarUrl = avatarCache.get(currentUser.uid);
                 if (!avatarUrl) {
-                    avatarUrl = generateAvatar(currentUser.uid, data.name || '?');
+                    avatarUrl = data.photoURL || generateAvatar(currentUser.uid, data.name || '?');
+                    avatarCache.set(currentUser.uid, avatarUrl);
                 }
                 document.getElementById('mob-profile-avatar').src = avatarUrl;
-                avatarCache.set(currentUser.uid, avatarUrl);
 
                 let infoHtml = '';
                 if (data.city) infoHtml += `<div>📍 <span>${escapeHtml(data.city)}</span></div>`;
@@ -415,7 +420,7 @@
                 if (data.coins !== undefined) infoHtml += `<div>💰 <span>${data.coins} монет</span></div>`;
                 document.getElementById('mob-profile-info').innerHTML = infoHtml;
 
-                // Загружаем подарки
+                // Магазин подарков и мои подарки
                 renderGiftStore();
                 renderMyGifts();
             }
@@ -454,7 +459,7 @@
             
             const btn = document.querySelector('[onclick*="avatar-upload"]');
             const originalText = btn.innerText;
-            btn.innerText = '⏳ Загрузка...';
+            btn.innerText = '⏳';
             btn.disabled = true;
             
             try {
@@ -462,11 +467,11 @@
                 await storageRef.put(file);
                 const url = await storageRef.getDownloadURL();
                 await db.collection('users').doc(currentUser.uid).update({ photoURL: url });
-                avatarCache.delete(currentUser.uid);
+                avatarCache.set(currentUser.uid, url);
                 document.getElementById('mob-profile-avatar').src = url + '?t=' + Date.now();
                 alert("✅ Аватарка обновлена!");
             } catch (e) {
-                alert("❌ Ошибка загрузки: " + e.message);
+                alert("❌ Ошибка: " + e.message);
             }
             
             btn.innerText = originalText;
@@ -481,11 +486,11 @@
             snap.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
             alert("✅ Стена очищена.");
-            renderUI(window.innerWidth > 768 ? 'desktop' : 'mobile');
+            renderMobileWall();
         }
 
         // =============================================
-        // ПОСТЫ (С МГНОВЕННЫМ ОТОБРАЖЕНИЕМ)
+        // ПОСТЫ
         // =============================================
         async function createPost(device) {
             const textEl = document.getElementById(device === 'desktop' ? 'desk-post-text' : 'mob-post-text');
@@ -506,28 +511,12 @@
                     text: text,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // Мгновенно обновляем
-                renderUI(device);
+                renderMobileWall();
+                if (device === 'desktop') renderDesktopWall();
             } catch (e) { alert("❌ Ошибка отправки"); }
             
             btn.innerText = original;
             btn.disabled = false;
-        }
-
-        async function renderUI(device) {
-            if (device === 'desktop') {
-                renderDesktopWall();
-                renderDesktopNews();
-                renderDesktopFriends();
-                renderDesktopMessages();
-                renderDesktopGifts();
-            } else {
-                renderMobileWall();
-                renderMobileNews();
-                renderMobileFriends();
-                renderMobileMessages();
-                renderMobileGifts();
-            }
         }
 
         function escapeHtml(text) {
@@ -546,15 +535,9 @@
 
         async function getUserAvatar(userId, name) {
             if (avatarCache.has(userId)) return avatarCache.get(userId);
-            
             try {
                 const doc = await db.collection('users').doc(userId).get();
-                let url;
-                if (doc.exists && doc.data().photoURL) {
-                    url = doc.data().photoURL;
-                } else {
-                    url = generateAvatar(userId, name || doc.data()?.name || '?');
-                }
+                let url = doc.exists && doc.data().photoURL ? doc.data().photoURL : generateAvatar(userId, name || doc.data()?.name || '?');
                 avatarCache.set(userId, url);
                 return url;
             } catch (e) {
@@ -565,84 +548,66 @@
         }
 
         // =============================================
-        // СТЕНА (МГНОВЕННАЯ ЗАГРУЗКА)
+        // СТЕНА (МГНОВЕННАЯ)
         // =============================================
         async function renderMobileWall() {
             if (unsubscribeWall) { unsubscribeWall(); unsubscribeWall = null; }
             const container = document.getElementById('mobile-wall-content');
-            
-            // Показываем заглушку
             container.innerHTML = `<div class="mobile-empty"><h3>⏳ Загрузка...</h3></div>`;
             
-            // Сначала загружаем посты
-            const snap = await db.collection('posts')
-                .where('authorId', '==', currentUser.uid)
-                .orderBy('createdAt', 'desc')
-                .limit(50)
-                .get();
-            
-            // Предзагружаем аватарки
-            const userIds = [];
-            snap.forEach(doc => {
-                const p = doc.data();
-                if (!avatarCache.has(p.authorId)) {
-                    userIds.push(p.authorId);
-                }
-            });
-            
-            if (userIds.length > 0) {
-                const chunks = [];
-                for (let i = 0; i < userIds.length; i += 10) {
-                    chunks.push(userIds.slice(i, i + 10));
-                }
-                for (const chunk of chunks) {
-                    try {
-                        const usersSnap = await db.collection('users')
-                            .where('__name__', 'in', chunk)
-                            .get();
-                        usersSnap.forEach(doc => {
-                            const data = doc.data();
-                            const url = data.photoURL || generateAvatar(doc.id, data.name || '?');
-                            avatarCache.set(doc.id, url);
-                        });
-                    } catch (e) {}
-                }
-            }
-            
-            // Рендерим посты
-            let html = '';
-            if (snap.empty) {
-                html = `<div class="mobile-empty"><h3>📝 Здесь пока пусто</h3><p>Напишите первый пост!</p></div>`;
-            } else {
-                snap.forEach(doc => {
-                    const p = doc.data();
-                    const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                    const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
-                    html += `<div class="mobile-post">
-                        <img src="${avatarUrl}">
-                        <div>
-                            <span class="author">${escapeHtml(p.authorName)}</span>
-                            <span class="date">${date}</span>
-                            <div class="text">${escapeHtml(p.text)}</div>
-                        </div>
-                    </div>`;
-                });
-            }
-            container.innerHTML = html;
-            
-            // Подписываемся на обновления
-            unsubscribeWall = db.collection('posts')
-                .where('authorId', '==', currentUser.uid)
-                .orderBy('createdAt', 'desc')
-                .limit(50)
-                .onSnapshot(snapshot => {
-                    // Обновляем только новые посты
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            renderMobileWall();
-                        }
+            try {
+                const snap = await db.collection('posts')
+                    .where('authorId', '==', currentUser.uid)
+                    .orderBy('createdAt', 'desc')
+                    .limit(50)
+                    .get();
+                
+                let html = '';
+                if (snap.empty) {
+                    html = `<div class="mobile-empty"><h3>📝 Здесь пока пусто</h3><p>Напишите первый пост!</p></div>`;
+                } else {
+                    // Собираем аватарки
+                    const userIds = [];
+                    snap.forEach(doc => {
+                        const p = doc.data();
+                        if (!avatarCache.has(p.authorId)) userIds.push(p.authorId);
                     });
-                });
+                    
+                    if (userIds.length > 0) {
+                        const chunks = [];
+                        for (let i = 0; i < userIds.length; i += 10) {
+                            chunks.push(userIds.slice(i, i + 10));
+                        }
+                        for (const chunk of chunks) {
+                            try {
+                                const usersSnap = await db.collection('users').where('__name__', 'in', chunk).get();
+                                usersSnap.forEach(doc => {
+                                    const data = doc.data();
+                                    const url = data.photoURL || generateAvatar(doc.id, data.name || '?');
+                                    avatarCache.set(doc.id, url);
+                                });
+                            } catch (e) {}
+                        }
+                    }
+                    
+                    snap.forEach(doc => {
+                        const p = doc.data();
+                        const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
+                        const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
+                        html += `<div class="mobile-post">
+                            <img src="${avatarUrl}">
+                            <div>
+                                <span class="author">${escapeHtml(p.authorName)}</span>
+                                <span class="date">${date}</span>
+                                <div class="text">${escapeHtml(p.text)}</div>
+                            </div>
+                        </div>`;
+                    });
+                }
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка: ${e.message}</div>`;
+            }
         }
 
         async function renderDesktopWall() {
@@ -668,42 +633,45 @@
             const container = document.getElementById('mobile-news-content');
             container.innerHTML = `<div class="mobile-empty"><h3>⏳ Загрузка...</h3></div>`;
             
-            const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-            let ids = [];
-            snap.forEach(doc => ids.push(doc.data().friendId));
-            
-            if (!ids.length) {
-                container.innerHTML = `<div class="mobile-empty"><h3>👥 У вас пока нет друзей</h3><p>Добавьте друзей, чтобы видеть их новости</p></div>`;
-                return;
+            try {
+                const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+                let ids = [];
+                snap.forEach(doc => ids.push(doc.data().friendId));
+                
+                if (!ids.length) {
+                    container.innerHTML = `<div class="mobile-empty"><h3>👥 У вас пока нет друзей</h3></div>`;
+                    return;
+                }
+                
+                const chunk = ids.slice(0, 10);
+                const postsSnap = await db.collection('posts')
+                    .where('authorId', 'in', chunk)
+                    .orderBy('createdAt', 'desc')
+                    .limit(50)
+                    .get();
+                
+                let html = '';
+                if (postsSnap.empty) {
+                    html = `<div class="mobile-empty"><h3>📭 У друзей пока нет постов</h3></div>`;
+                } else {
+                    postsSnap.forEach(doc => {
+                        const p = doc.data();
+                        const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
+                        const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
+                        html += `<div class="mobile-post">
+                            <img src="${avatarUrl}">
+                            <div>
+                                <span class="author">${escapeHtml(p.authorName)}</span>
+                                <span class="date">${date}</span>
+                                <div class="text">${escapeHtml(p.text)}</div>
+                            </div>
+                        </div>`;
+                    });
+                }
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка</div>`;
             }
-            
-            // Загружаем посты друзей
-            const chunk = ids.slice(0, 10);
-            const postsSnap = await db.collection('posts')
-                .where('authorId', 'in', chunk)
-                .orderBy('createdAt', 'desc')
-                .limit(50)
-                .get();
-            
-            let html = '';
-            if (postsSnap.empty) {
-                html = `<div class="mobile-empty"><h3>📭 У друзей пока нет постов</h3></div>`;
-            } else {
-                postsSnap.forEach(doc => {
-                    const p = doc.data();
-                    const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                    const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
-                    html += `<div class="mobile-post">
-                        <img src="${avatarUrl}">
-                        <div>
-                            <span class="author">${escapeHtml(p.authorName)}</span>
-                            <span class="date">${date}</span>
-                            <div class="text">${escapeHtml(p.text)}</div>
-                        </div>
-                    </div>`;
-                });
-            }
-            container.innerHTML = html;
         }
 
         async function renderDesktopNews() {
@@ -729,7 +697,7 @@
         }
 
         // =============================================
-        // ДРУЗЬЯ (БЫСТРЫЙ ПОИСК)
+        // ДРУЗЬЯ
         // =============================================
         async function searchUsers(device) {
             const inputId = device === 'desktop' ? 'desk-search-input' : 'mob-search-input';
@@ -818,7 +786,6 @@
             document.getElementById('chat-interface').style.display = 'none';
             if (unsubscribeChat) unsubscribeChat();
             currentChatPartnerId = null;
-            renderUI(window.innerWidth > 768 ? 'desktop' : 'mobile');
         }
 
         function renderChatMessages() {
@@ -890,7 +857,7 @@
         }
 
         // =============================================
-        // ПОДАРКИ И МОНЕТЫ
+        // ПОДАРКИ (РАБОТАЮТ БЕЗ КАРТИНОК)
         // =============================================
         function renderGiftStore() {
             const container = document.getElementById('mob-profile-info');
@@ -922,7 +889,7 @@
             const friendNames = [];
             const friendSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
             friendSnap.forEach(doc => friendNames.push(doc.data().friendName));
-            if (!friendNames.length) return alert("❌ У вас нет друзей, чтобы дарить подарки!");
+            if (!friendNames.length) return alert("❌ У вас нет друзей!");
 
             const recipientName = prompt(`🎁 Кому подарить ${gift.name}?\nДрузья: ${friendNames.join(', ')}`);
             if (!recipientName) return;
@@ -980,12 +947,12 @@
             const docRef = db.collection('gifts').doc(giftDocId);
             const doc = await docRef.get();
             if (!doc.exists) return alert("❌ Подарок не найден!");
-            if (doc.data().returned) return alert("✅ Вы уже вернули монеты за этот подарок!");
+            if (doc.data().returned) return alert("✅ Вы уже вернули монеты!");
 
             const gift = GIFTS.find(g => g.id === doc.data().giftId);
-            if (!gift) return alert("❌ Ошибка: подарок не найден в каталоге");
+            if (!gift) return alert("❌ Ошибка!");
             const myData = (await db.collection('users').doc(currentUser.uid).get()).data();
-            if (myData.coins < gift.price) return alert(`❌ У вас недостаточно монет! Нужно ${gift.price}`);
+            if (myData.coins < gift.price) return alert(`❌ Нужно ${gift.price} монет`);
 
             await db.collection('users').doc(fromId).update({
                 coins: firebase.firestore.FieldValue.increment(gift.price)
@@ -995,7 +962,7 @@
             });
             await docRef.update({ returned: true });
 
-            alert(`✅ Монеты (${gift.price}) возвращены пользователю ${escapeHtml(doc.data().fromName)}.`);
+            alert(`✅ Монеты (${gift.price}) возвращены!`);
             loadUserProfile();
         }
 
@@ -1019,7 +986,6 @@
                 
                 let html = '';
                 
-                // Полученные подарки
                 html += `<div style="padding:10px;background:#fff;margin-bottom:10px;">
                     <h4 style="color:#2B587A;">💝 Полученные подарки</h4>`;
                 
@@ -1045,7 +1011,6 @@
                 }
                 html += `</div>`;
                 
-                // Отправленные подарки
                 html += `<div style="padding:10px;background:#fff;">
                     <h4 style="color:#2B587A;">🎁 Отправленные подарки</h4>`;
                 
@@ -1072,15 +1037,14 @@
                 
                 container.innerHTML = html;
             } catch (e) {
-                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка загрузки подарков</div>`;
-                console.error('Gifts error:', e);
+                container.innerHTML = `<div class="mobile-empty" style="color:red;">❌ Ошибка: ${e.message}</div>`;
             }
         }
 
         async function renderDesktopGifts() {
             const container = document.getElementById('desk-gifts-content');
             if (!container) return;
-            await renderMobileGifts(); // Используем ту же логику
+            await renderMobileGifts();
         }
 
         // =============================================
@@ -1099,7 +1063,6 @@
             const map = { wall: 0, news: 1, msg: 2, friends: 3, gifts: 4 };
             if (map[tab] !== undefined) btns[map[tab]].classList.add('active');
             
-            // Обновляем заголовок
             const titles = { wall: 'Моя Страница', news: 'Новости', msg: 'Сообщения', friends: 'Друзья', gifts: 'Подарки' };
             document.getElementById('mob-header-title').innerText = titles[tab] || 'VK 2011';
             
