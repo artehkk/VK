@@ -90,25 +90,6 @@
 
         #offline-banner { display: none; background: #d9534f; color: white; text-align: center; padding: 5px; font-size: 12px; position: sticky; top: 44px; z-index: 101; }
 
-        /* --- Стили для Подарков --- */
-        .gifts-store-window {
-            background: white; border: 1px solid #C5D0DB; padding: 15px; margin: 10px 15px; border-radius: 4px;
-        }
-        .gifts-store-window h3 { margin-bottom: 10px; color: #2B587A; }
-        .gift-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: flex-start; }
-        .gift-item { display: flex; flex-direction: column; align-items: center; border: 1px solid #eee; padding: 10px; border-radius: 4px; width: 70px; background: #fafafa; cursor: pointer; }
-        .gift-item:hover { background: #eef2f5; }
-        .gift-item img { width: 50px; height: 50px; object-fit: contain; }
-        .gift-item .gift-name { font-size: 12px; font-weight: bold; margin-top: 5px; }
-        .gift-item .gift-price { font-size: 11px; color: #777; }
-        
-        .my-gifts-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .my-gift-item { display: flex; flex-direction: column; align-items: center; width: 60px; border: 1px solid #eee; padding: 5px; border-radius: 4px; background: #fafafa; }
-        .my-gift-item img { width: 40px; height: 40px; object-fit: contain; }
-        .my-gift-item .gift-from { font-size: 10px; color: #777; text-align: center; }
-        .return-btn { background: #f0ad4e; color: white; border: none; padding: 2px 6px; border-radius: 3px; font-size: 10px; cursor: pointer; margin-top: 3px; }
-        .return-btn:hover { background: #ec971f; }
-
         @media (min-width: 769px) { .desktop-view { display: block; } .mobile-view { display: none !important; } }
         @media (max-width: 768px) { .desktop-view { display: none !important; } .mobile-view { display: block; } }
     </style>
@@ -279,7 +260,7 @@
         const avatarCache = new Map();
 
         // =============================================
-        // АВТОРИЗАЦИЯ
+        // АВТОРИЗАЦИЯ (НОВАЯ, СУПЕР-НАДЕЖНАЯ ЛОГИКА)
         // =============================================
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -298,8 +279,8 @@
             if(name.length < 2) return showAuthError("Имя должно быть минимум 2 символа!");
 
             try {
+                // ЕСЛИ РЕГИСТРАЦИЯ
                 if (isRegisterMode) {
-                    // РЕГИСТРАЦИЯ
                     const email = `${name}_${Date.now()}@vkclone.local`;
                     const cred = await auth.createUserWithEmailAndPassword(email, pass);
                     await cred.user.updateProfile({ displayName: name });
@@ -311,7 +292,7 @@
                         status: "",
                         about: "",
                         photoURL: "",
-                        coins: 100, // <-- СТАРТОВЫЕ МОНЕТЫ
+                        coins: 100,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     alert("Аккаунт создан! Вы получили 100 монет.");
@@ -319,29 +300,40 @@
                     enterApp();
                     return;
                 } 
+
+                // ЕСЛИ ВХОД
+                // 1. Сначала ищем пользователя по имени в Firestore
+                const snap = await db.collection('users').where('name', '==', name).get();
                 
-                // ВХОД
-                if (name.includes('@')) {
-                    try {
-                        const cred = await auth.signInWithEmailAndPassword(name, pass);
+                if (!snap.empty) {
+                    // Нашли пользователя в базе. Берем его email.
+                    const userData = snap.docs[0].data();
+                    const foundEmail = userData.email;
+                    
+                    if (foundEmail) {
+                        // Пробуем войти по найденному email
+                        const cred = await auth.signInWithEmailAndPassword(foundEmail, pass);
                         currentUser = auth.currentUser;
                         enterApp();
                         return;
-                    } catch (e) {
-                        if (e.code !== 'auth/user-not-found') throw e;
+                    } else {
+                        return showAuthError("Ваш аккаунт поврежден (нет email). Перерегистрируйтесь.");
                     }
                 }
 
-                const snap = await db.collection('users').where('name', '==', name).get();
-                if (snap.empty) return showAuthError("Такой пользователь не найден!");
-                
-                const userData = snap.docs[0].data();
-                const foundEmail = userData.email;
-                
-                const cred = await auth.signInWithEmailAndPassword(foundEmail, pass);
-                currentUser = auth.currentUser;
-                enterApp();
-                
+                // 2. Если не нашли в базе, пробуем прямой вход (вдруг пользователь ввел email в поле имени)
+                try {
+                    const cred = await auth.signInWithEmailAndPassword(name, pass);
+                    currentUser = auth.currentUser;
+                    enterApp();
+                    return;
+                } catch (e) {
+                    if (e.code !== 'auth/user-not-found') throw e;
+                }
+
+                // 3. Если всё не удалось — пользователь не найден
+                return showAuthError("Пользователь не найден. Проверьте имя или зарегистрируйтесь.");
+
             } catch (e) {
                 if (e.code === 'auth/user-not-found') return showAuthError("Неверный логин!");
                 if (e.code === 'auth/wrong-password') return showAuthError("Неверный пароль!");
@@ -786,7 +778,7 @@
         }
 
         // =============================================
-        // ПОДАРКИ И МОНЕТЫ (НОВАЯ ФУНКЦИЯ)
+        // ПОДАРКИ И МОНЕТЫ
         // =============================================
         const GIFTS = [
             { id: 'rose', name: '🌹 Роза', price: 10 },
@@ -822,7 +814,6 @@
             if (!gift) return alert("Подарок не найден!");
             if (userData.coins < gift.price) return alert(`Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
 
-            // Выбор получателя
             const friendNames = [];
             const friendSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
             friendSnap.forEach(doc => friendNames.push(doc.data().friendName));
@@ -832,17 +823,14 @@
             if (!recipientName) return;
             if (!friendNames.includes(recipientName)) return alert("Этот пользователь не у вас в друзьях!");
 
-            // Ищем получателя
             const snap = await db.collection('users').where('name', '==', recipientName).get();
             if (snap.empty) return alert("Пользователь не найден!");
             const recipientId = snap.docs[0].id;
 
-            // Списание монет
             await db.collection('users').doc(currentUser.uid).update({
                 coins: firebase.firestore.FieldValue.increment(-gift.price)
             });
 
-            // Создание записи о подарке
             await db.collection('gifts').add({
                 fromId: currentUser.uid,
                 fromName: currentUser.displayName,
@@ -882,27 +870,22 @@
         }
 
         async function returnCoins(giftDocId, fromId) {
-            // Проверяем, не вернули ли уже
             const docRef = db.collection('gifts').doc(giftDocId);
             const doc = await docRef.get();
             if (!doc.exists) return alert("Подарок не найден!");
             if (doc.data().returned) return alert("Вы уже вернули монеты за этот подарок!");
 
-            // Списываем монеты у получателя (у того, кто возвращает)
             const gift = GIFTS.find(g => g.id === doc.data().giftId);
             if (!gift) return alert("Ошибка: подарок не найден в каталоге");
             const myData = (await db.collection('users').doc(currentUser.uid).get()).data();
             if (myData.coins < gift.price) return alert(`У вас недостаточно монет, чтобы вернуть! Нужно ${gift.price}`);
 
-            // Возвращаем монеты дарителю
             await db.collection('users').doc(fromId).update({
                 coins: firebase.firestore.FieldValue.increment(gift.price)
             });
-            // Списываем у себя
             await db.collection('users').doc(currentUser.uid).update({
                 coins: firebase.firestore.FieldValue.increment(-gift.price)
             });
-            // Помечаем подарок как возвращённый
             await docRef.update({ returned: true });
 
             alert(`✅ Монеты (${gift.price}) возвращены пользователю ${escapeHtml(doc.data().fromName)}. Подарок остался у вас.`);
