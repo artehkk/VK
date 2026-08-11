@@ -61,17 +61,16 @@
         .friend-item { background: white; padding: 12px; margin: 0 10px 8px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer; }
         .friend-item:hover { background: #f4f6f8; }
         .friend-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
-        .friend-item .info { display: flex; gap: 10px; align-items: center; flex: 1; }
+        .friend-item .info { display: flex; gap: 10px; align-items: center; flex: 1; min-width: 0; }
         .friend-item .info .friend-name { font-weight: bold; }
-        .friend-item .info .last-msg { font-size: 12px; color: #666; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .friend-item .info .last-time { font-size: 11px; color: #999; margin-left: 5px; }
+        .friend-item .info .last-msg { font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+        .friend-item .info .last-time { font-size: 11px; color: #999; margin-left: 5px; flex-shrink: 0; }
         .friend-item .add-btn { background: #5E83A9; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
         .friend-item .added { color: #999; font-size: 12px; }
         .friend-item .chat-btn { background: #5cb85c; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 5px; }
         .search-box { background: white; padding: 10px; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         .search-box input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
         
-        /* Стили для чата */
         #chat-interface { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F2F2F2; z-index: 9999; flex-direction: column; }
         .chat-header { background: #5E83A9; color: white; padding: 12px; display: flex; align-items: center; gap: 15px; min-height: 44px; }
         .chat-header .back-btn { font-size: 24px; cursor: pointer; }
@@ -83,7 +82,6 @@
         .chat-input-area button { background: #5E83A9; color: white; border: none; padding: 0 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
         
         @media (min-width: 769px) { body { padding: 20px; } .app { margin: 0 auto; } }
-        .avatar-upload-hidden { display: none; }
     </style>
 </head>
 <body>
@@ -107,7 +105,6 @@
         <span class="logout" onclick="logout()">Выход</span>
     </div>
 
-    <!-- Вкладка: Стена -->
     <div id="tab-wall" class="tab active">
         <div class="profile" id="profile-block">
             <img id="profile-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%235E83A9'/%3E%3Ctext x='30' y='40' text-anchor='middle' fill='white' font-size='28' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" onclick="document.getElementById('avatar-upload-input').click()">
@@ -133,13 +130,11 @@
         <div id="wall-posts"></div>
     </div>
 
-    <!-- Вкладка: Новости -->
     <div id="tab-news" class="tab">
         <div style="padding:10px 10px 0;font-size:16px;font-weight:bold;color:#2B587A;">📰 Новости друзей</div>
         <div id="news-posts"></div>
     </div>
 
-    <!-- Вкладка: Друзья -->
     <div id="tab-friends" class="tab">
         <div style="padding:10px 10px 0;font-size:16px;font-weight:bold;color:#2B587A;">👥 Друзья</div>
         <div class="search-box">
@@ -148,13 +143,11 @@
         <div id="friends-list"></div>
     </div>
 
-    <!-- Вкладка: Сообщения (Чат) -->
     <div id="tab-messages" class="tab">
         <div style="padding:10px 10px 0;font-size:16px;font-weight:bold;color:#2B587A;">💬 Сообщения</div>
         <div id="chat-list"></div>
     </div>
 
-    <!-- Вкладка: Подарки -->
     <div id="tab-gifts" class="tab">
         <div style="padding:10px 10px 0;font-size:16px;font-weight:bold;color:#2B587A;">🎁 Подарки</div>
         <div id="gifts-store" class="gift-store"></div>
@@ -164,7 +157,6 @@
         </div>
     </div>
 
-    <!-- Нижняя навигация -->
     <div class="nav">
         <button class="active" onclick="switchTab('wall')">📝 Стена</button>
         <button onclick="switchTab('news')">📰 Новости</button>
@@ -216,7 +208,6 @@ let currentChatPartnerName = null;
 let unsubscribeChat = null;
 let GIFTS = [];
 
-// Загружаем подарки с сервера
 async function loadGifts() {
     try {
         const response = await fetch('/api/gifts');
@@ -412,7 +403,7 @@ function clearPostImage() {
 }
 
 // =============================================
-// ПОСТЫ С ФОТО
+// ПОСТЫ
 // =============================================
 async function createPost() {
     const text = document.getElementById('post-text').value.trim();
@@ -647,7 +638,7 @@ async function addFriend(friendId, friendName) {
 }
 
 // =============================================
-// ЧАТЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+// ЧАТЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ - БЕЗ ИНДЕКСОВ)
 // =============================================
 async function renderChatList() {
     const container = document.getElementById('chat-list');
@@ -684,54 +675,61 @@ async function renderChatList() {
                 }
             }
             
-            // Проверяем последнее сообщение
+            // ПОЛУЧАЕМ ВСЕ СООБЩЕНИЯ И СОРТИРУЕМ НА КЛИЕНТЕ (без индекса!)
             const chatId = [currentUser.uid, friendId].sort().join('_');
             let lastMsg = 'Нет сообщений';
             let lastTime = '';
             
             try {
-                const lastMsgSnap = await db.collection('messages')
+                const messagesSnap = await db.collection('messages')
                     .where('chatId', '==', chatId)
-                    .orderBy('createdAt', 'desc')
-                    .limit(1)
                     .get();
                 
-                if (!lastMsgSnap.empty) {
-                    const msg = lastMsgSnap.docs[0].data();
-                    lastMsg = msg.text || '📎';
-                    if (msg.createdAt) {
+                if (!messagesSnap.empty) {
+                    const messages = [];
+                    messagesSnap.forEach(msgDoc => messages.push(msgDoc.data()));
+                    
+                    // Сортируем на клиенте по времени
+                    messages.sort((a, b) => {
+                        const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                        const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                        return db2 - da;
+                    });
+                    
+                    const last = messages[0];
+                    lastMsg = last.text || '📎';
+                    if (last.createdAt) {
                         try {
-                            const date = msg.createdAt.toDate ? msg.createdAt.toDate() : new Date(msg.createdAt);
+                            const date = last.createdAt.toDate ? last.createdAt.toDate() : new Date(last.createdAt);
                             lastTime = date.toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                         } catch(e) {}
                     }
                 }
             } catch (e) {
-                console.warn('Ошибка получения последнего сообщения:', e);
+                console.warn('Ошибка получения сообщений для чата:', e);
             }
             
             html += `
                 <div class="friend-item" onclick="openChat('${friendId}')">
                     <div class="info">
                         <img src="${avatar}" onerror="this.src='${getInitialsAvatar(f.friendName)}'">
-                        <div>
+                        <div style="min-width:0;">
                             <div class="friend-name">${escapeHtml(f.friendName || 'Друг')}</div>
                             <div class="last-msg">${escapeHtml(lastMsg)}</div>
                         </div>
                     </div>
-                    ${lastTime ? `<div class="last-time">${lastTime}</div>` : ''}
+                    ${lastTime ? `<span class="last-time">${lastTime}</span>` : ''}
                 </div>
             `;
         }
         container.innerHTML = html;
     } catch (error) {
         console.error('Ошибка загрузки чатов:', error);
-        container.innerHTML = '<div class="empty">❌ Ошибка загрузки</div>';
+        container.innerHTML = '<div class="empty">❌ Ошибка загрузки: ' + error.message + '</div>';
     }
 }
 
 async function openChat(friendId) {
-    // Закрываем предыдущую подписку
     if (unsubscribeChat) { 
         try { unsubscribeChat(); } catch(e) {}
         unsubscribeChat = null; 
@@ -750,7 +748,6 @@ async function openChat(friendId) {
         currentChatPartnerName = doc.data().name || 'Друг';
         document.getElementById('chat-partner-name').innerText = currentChatPartnerName;
         
-        // Подписываемся на сообщения
         renderChatMessages();
     } catch (e) {
         console.error('Ошибка открытия чата:', e);
@@ -773,7 +770,6 @@ function closeChat() {
 function renderChatMessages() {
     const box = document.getElementById('chat-messages-box');
     
-    // Очищаем старую подписку
     if (unsubscribeChat) {
         try { unsubscribeChat(); } catch(e) {}
         unsubscribeChat = null;
@@ -787,51 +783,53 @@ function renderChatMessages() {
     const chatId = [currentUser.uid, currentChatPartnerId].sort().join('_');
     
     try {
+        // Подписываемся на изменения (без orderBy, чтобы не требовать индекс)
         unsubscribeChat = db.collection('messages')
             .where('chatId', '==', chatId)
-            .orderBy('createdAt', 'asc')
             .onSnapshot(snapshot => {
                 if (snapshot.empty) {
                     box.innerHTML = '<div style="padding:10px;color:#777;text-align:center;">💬 Начните общение</div>';
                     return;
                 }
                 
-                // Проверяем, был ли скролл внизу
-                const wasScrolledToBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
-                
-                // Обрабатываем изменения
-                let hasNewMessages = false;
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const m = change.doc.data();
-                        const isMe = m.fromId === currentUser.uid;
-                        let date = 'Сейчас';
-                        if (m.createdAt) {
-                            try {
-                                const d = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
-                                date = d.toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-                            } catch(e) {}
-                        }
-                        const msgHtml = `
-                            <div class="msg-bubble ${isMe ? 'my-msg' : ''}">
-                                ${escapeHtml(m.text)}
-                                <div style="font-size:10px;color:#999;margin-top:2px;">${date}</div>
-                            </div>
-                        `;
-                        box.insertAdjacentHTML('beforeend', msgHtml);
-                        hasNewMessages = true;
-                    }
+                // Собираем все сообщения и сортируем на клиенте
+                const messages = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    messages.push({ id: doc.id, ...data });
                 });
                 
-                // Если было добавлено сообщение или скролл был внизу - прокручиваем вниз
-                if (hasNewMessages || wasScrolledToBottom) {
-                    setTimeout(() => { 
-                        box.scrollTop = box.scrollHeight; 
-                    }, 100);
-                }
+                // Сортируем по времени (старые сверху)
+                messages.sort((a, b) => {
+                    const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+                    const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+                    return da - db2;
+                });
+                
+                let html = '';
+                messages.forEach(m => {
+                    const isMe = m.fromId === currentUser.uid;
+                    let date = 'Сейчас';
+                    if (m.createdAt) {
+                        try {
+                            const d = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+                            date = d.toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                        } catch(e) {}
+                    }
+                    html += `
+                        <div class="msg-bubble ${isMe ? 'my-msg' : ''}">
+                            ${escapeHtml(m.text)}
+                            <div style="font-size:10px;color:#999;margin-top:2px;">${date}</div>
+                        </div>
+                    `;
+                });
+                box.innerHTML = html;
+                
+                // Прокручиваем вниз
+                setTimeout(() => { box.scrollTop = box.scrollHeight; }, 50);
             }, (error) => {
                 console.error('Ошибка подписки на сообщения:', error);
-                box.innerHTML = '<div style="padding:10px;color:red;text-align:center;">❌ Ошибка подключения к чату</div>';
+                box.innerHTML = '<div style="padding:10px;color:red;text-align:center;">❌ Ошибка загрузки сообщений: ' + error.message + '</div>';
             });
     } catch (error) {
         console.error('Ошибка:', error);
@@ -992,7 +990,6 @@ async function returnGift(docId, fromId, giftId) {
 // НАВИГАЦИЯ
 // =============================================
 function switchTab(tab) {
-    // Закрываем чат при переключении
     if (unsubscribeChat) { 
         try { unsubscribeChat(); } catch(e) {}
         unsubscribeChat = null; 
@@ -1018,7 +1015,6 @@ function switchTab(tab) {
 // АВТОВХОД
 // =============================================
 auth.onAuthStateChanged(user => {
-    console.log('Auth state changed:', user ? 'Пользователь есть' : 'Нет пользователя');
     if (user && !currentUser) {
         currentUser = user;
         enterApp();
