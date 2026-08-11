@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VK 2011</title>
-    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', Arial, sans-serif; }
         body { background: #DCE1E7; }
-        
         #auth-screen { display: flex; justify-content: center; align-items: center; height: 100vh; background: #DCE1E7; }
         .auth-box { background: white; padding: 30px; border-radius: 10px; width: 100%; max-width: 380px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
         .auth-box h2 { color: #2B587A; margin-bottom: 20px; }
@@ -21,22 +18,30 @@
         .auth-box button { width: 100%; padding: 12px; background: #5E83A9; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
         .auth-toggle { margin-top: 15px; font-size: 14px; color: #2B587A; cursor: pointer; }
         #auth-error { color: red; font-size: 12px; display: none; margin-bottom: 10px; }
-        
         .app { display: none; max-width: 600px; margin: 0 auto; padding-bottom: 70px; }
         .header { background: linear-gradient(to bottom, #5E83A9, #3A6087); color: white; padding: 14px 16px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
         .header .logout { color: #dbeaff; font-size: 13px; cursor: pointer; }
         .profile { background: white; padding: 15px; border-radius: 10px; margin: 10px; display: flex; gap: 15px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .profile img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #ddd; object-fit: cover; }
+        .profile img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #ddd; object-fit: cover; cursor: pointer; }
         .profile .name { font-size: 17px; font-weight: bold; color: #000; }
         .profile .coins { font-size: 13px; color: #777; }
-        .post-box { background: white; padding: 10px; margin: 0 10px 10px; border-radius: 10px; display: flex; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .post-box { background: white; padding: 10px; margin: 0 10px 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .post-box .input-row { display: flex; gap: 8px; }
         .post-box textarea { flex: 1; border: 1px solid #ccc; border-radius: 5px; padding: 8px; height: 38px; resize: none; font-size: 14px; font-family: inherit; }
         .post-box button { background: #5E83A9; color: white; border: none; padding: 0 16px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .post { background: white; padding: 10px; margin: 0 10px 8px; border-radius: 10px; display: flex; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .post img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
-        .post .name { font-weight: bold; color: #2B587A; font-size: 14px; }
-        .post .date { color: #999; font-size: 11px; }
-        .post .text { margin-top: 4px; color: #333; font-size: 14px; word-break: break-word; }
+        .post-box .file-upload-row { display: flex; gap: 8px; align-items: center; padding: 4px 0; }
+        .post-box .file-upload-row input[type="file"] { display: none; }
+        .post-box .file-upload-row label { background: #f0f0f0; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; }
+        .post-box .file-upload-row .file-name { font-size: 12px; color: #666; flex: 1; }
+        .post-box .file-upload-row .clear-file { color: red; cursor: pointer; font-size: 14px; }
+        .post { background: white; padding: 10px; margin: 0 10px 8px; border-radius: 10px; display: flex; gap: 10px; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .post .post-header { display: flex; gap: 10px; align-items: flex-start; }
+        .post .post-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
+        .post .post-header .name { font-weight: bold; color: #2B587A; font-size: 14px; }
+        .post .post-header .date { color: #999; font-size: 11px; margin-left: 8px; }
+        .post .post-text { margin-top: 4px; color: #333; font-size: 14px; word-break: break-word; }
+        .post .post-image { margin-top: 8px; max-width: 100%; border-radius: 8px; }
+        .post .post-image img { max-width: 100%; max-height: 400px; border-radius: 8px; border: 1px solid #ddd; }
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; background: #222; border-top: 2px solid #111; z-index: 20; }
         .nav button { flex: 1; padding: 10px 0; background: transparent; color: #999; border: none; font-size: 10px; text-transform: uppercase; cursor: pointer; }
         .nav button.active { color: white; background: rgba(255,255,255,0.05); }
@@ -61,6 +66,8 @@
         .search-box { background: white; padding: 10px; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         .search-box input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
         @media (min-width: 769px) { body { padding: 20px; } .app { margin: 0 auto; } }
+        .avatar-upload-hidden { display: none; }
+        .upload-avatar-btn { background: #5E83A9; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -70,8 +77,8 @@
     <div class="auth-box">
         <h2 id="auth-title">Вход</h2>
         <div id="auth-error"></div>
-        <input type="text" id="auth-name" placeholder="Имя пользователя" value="artej">
-        <input type="password" id="auth-pass" placeholder="Пароль" value="123456">
+        <input type="text" id="auth-name" placeholder="Имя пользователя">
+        <input type="password" id="auth-pass" placeholder="Пароль">
         <button onclick="handleAuth()" id="auth-btn">Войти</button>
         <div class="auth-toggle" onclick="toggleAuth()">Нет аккаунта? Зарегистрироваться</div>
     </div>
@@ -87,15 +94,25 @@
     <!-- Вкладка: Стена -->
     <div id="tab-wall" class="tab active">
         <div class="profile" id="profile-block">
-            <img id="profile-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%235E83A9'/%3E%3Ctext x='30' y='40' text-anchor='middle' fill='white' font-size='28' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E">
+            <img id="profile-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%235E83A9'/%3E%3Ctext x='30' y='40' text-anchor='middle' fill='white' font-size='28' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" onclick="document.getElementById('avatar-upload-input').click()">
             <div>
                 <div class="name" id="profile-name">Загрузка...</div>
                 <div class="coins" id="profile-coins">💰 0 монет</div>
+                <input type="file" id="avatar-upload-input" accept="image/*" style="display:none;" onchange="uploadAvatar()">
+                <button class="upload-avatar-btn" onclick="document.getElementById('avatar-upload-input').click()">📷 Сменить аву</button>
             </div>
         </div>
         <div class="post-box">
-            <textarea id="post-text" placeholder="Что у вас нового?"></textarea>
-            <button onclick="createPost()">Отпр.</button>
+            <div class="input-row">
+                <textarea id="post-text" placeholder="Что у вас нового?"></textarea>
+                <button onclick="createPost()">Отпр.</button>
+            </div>
+            <div class="file-upload-row">
+                <input type="file" id="post-image-input" accept="image/*" onchange="handlePostImageSelect()">
+                <label for="post-image-input">📷 Прикрепить фото</label>
+                <span class="file-name" id="post-file-name">Файл не выбран</span>
+                <span class="clear-file" onclick="clearPostImage()">✕</span>
+            </div>
         </div>
         <div id="wall-posts"></div>
     </div>
@@ -146,13 +163,10 @@ const firebaseConfig = {
     messagingSenderId: "1030104176002",
     appId: "1:1030104176002:web:94d2f0e155710370762b9b"
 };
-
-// ИНИЦИАЛИЗАЦИЯ
-console.log('🚀 Запуск...');
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-console.log('✅ Firebase инициализирован');
+const storage = firebase.storage();
 
 // =============================================
 // ПЕРЕМЕННЫЕ
@@ -160,6 +174,7 @@ console.log('✅ Firebase инициализирован');
 let currentUser = null;
 let isRegister = false;
 const avatarCache = new Map();
+let selectedPostImage = null;
 
 const GIFTS = [
     { id: 'rose', icon: '🌹', name: 'Роза', price: 10 },
@@ -184,8 +199,6 @@ async function handleAuth() {
     const errorEl = document.getElementById('auth-error');
     errorEl.style.display = 'none';
 
-    console.log('📝 Попытка:', isRegister ? 'Регистрация' : 'Вход', 'Имя:', name);
-
     if (!name || !pass) {
         showError('Заполните все поля!');
         return;
@@ -194,16 +207,15 @@ async function handleAuth() {
         showError('Пароль минимум 6 символов!');
         return;
     }
+    if (name.length < 2) {
+        showError('Имя минимум 2 символа!');
+        return;
+    }
 
     try {
         if (isRegister) {
-            // РЕГИСТРАЦИЯ
             const email = `${name}_${Date.now()}@vkclone.local`;
-            console.log('📧 Email:', email);
-            
             const cred = await auth.createUserWithEmailAndPassword(email, pass);
-            console.log('✅ Пользователь создан:', cred.user.uid);
-            
             await cred.user.updateProfile({ displayName: name });
             
             await db.collection('users').doc(cred.user.uid).set({
@@ -212,59 +224,48 @@ async function handleAuth() {
                 coins: 100,
                 createdAt: new Date()
             });
-            console.log('✅ Профиль сохранен');
 
             await db.collection('posts').add({
                 authorId: cred.user.uid,
                 authorName: name,
                 text: '👋 Привет! Добро пожаловать в VK 2011!',
+                imageUrl: null,
                 createdAt: new Date()
             });
 
             alert('✅ Аккаунт создан! Вы получили 100 монет.');
             currentUser = auth.currentUser;
             enterApp();
-            
         } else {
-            // ВХОД
-            console.log('🔍 Ищем пользователя:', name);
             const snap = await db.collection('users').where('name', '==', name).get();
-            
             if (snap.empty) {
-                showError('Пользователь не найден! Попробуйте зарегистрироваться.');
+                showError('Пользователь не найден!');
                 return;
             }
-            
             const userData = snap.docs[0].data();
             const email = userData.email;
-            console.log('📧 Найден email:', email);
-            
+            if (!email) {
+                showError('Ошибка: email не найден!');
+                return;
+            }
             await auth.signInWithEmailAndPassword(email, pass);
-            console.log('✅ Вход выполнен');
-            
             currentUser = auth.currentUser;
             enterApp();
         }
-        
     } catch (e) {
-        console.error('❌ Ошибка:', e);
-        console.error('Код:', e.code);
-        console.error('Сообщение:', e.message);
-        
-        let msg = e.message;
-        if (e.code === 'auth/user-not-found') msg = 'Пользователь не найден';
-        else if (e.code === 'auth/wrong-password') msg = 'Неверный пароль!';
-        else if (e.code === 'auth/email-already-in-use') msg = 'Пользователь уже существует';
-        else if (e.code === 'auth/weak-password') msg = 'Пароль слишком слабый (мин. 6 символов)';
-        else if (e.code === 'auth/network-request-failed') msg = 'Ошибка сети! Проверьте интернет';
-        
-        showError('❌ ' + msg);
+        let errorMessage = e.message;
+        if (e.code === 'auth/user-not-found') errorMessage = 'Пользователь не найден. Проверьте имя или зарегистрируйтесь.';
+        else if (e.code === 'auth/wrong-password') errorMessage = 'Неверный пароль!';
+        else if (e.code === 'auth/email-already-in-use') errorMessage = 'Этот пользователь уже существует!';
+        else if (e.code === 'auth/weak-password') errorMessage = 'Пароль слишком слабый! Минимум 6 символов.';
+        else if (e.code === 'auth/network-request-failed') errorMessage = 'Ошибка сети! Проверьте подключение к интернету.';
+        showError(errorMessage);
     }
 }
 
 function showError(msg) {
     const el = document.getElementById('auth-error');
-    el.textContent = msg;
+    el.textContent = '❌ ' + msg;
     el.style.display = 'block';
 }
 
@@ -274,14 +275,12 @@ function logout() {
     avatarCache.clear();
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
-    console.log('👋 Выход выполнен');
 }
 
 // =============================================
 // ВХОД В ПРИЛОЖЕНИЕ
 // =============================================
 async function enterApp() {
-    console.log('🚪 Вход в приложение');
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     
@@ -320,25 +319,89 @@ function escapeHtml(text) {
 }
 
 // =============================================
-// ПОСТЫ
+// ЗАГРУЗКА АВАТАРКИ
+// =============================================
+async function uploadAvatar() {
+    const file = document.getElementById('avatar-upload-input').files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        alert('❌ Файл больше 5 МБ!');
+        return;
+    }
+    
+    try {
+        const storageRef = storage.ref(`avatars/${currentUser.uid}`);
+        await storageRef.put(file);
+        const url = await storageRef.getDownloadURL();
+        await db.collection('users').doc(currentUser.uid).update({ photoURL: url });
+        avatarCache.set(currentUser.uid, url);
+        document.getElementById('profile-avatar').src = url + '?t=' + Date.now();
+        alert("✅ Аватарка обновлена!");
+    } catch (e) {
+        alert("❌ Ошибка: " + e.message);
+    }
+    document.getElementById('avatar-upload-input').value = '';
+}
+
+// =============================================
+// РАБОТА С ИЗОБРАЖЕНИЯМИ ДЛЯ ПОСТОВ
+// =============================================
+function handlePostImageSelect() {
+    const file = document.getElementById('post-image-input').files[0];
+    if (file) {
+        selectedPostImage = file;
+        document.getElementById('post-file-name').textContent = file.name;
+    }
+}
+
+function clearPostImage() {
+    selectedPostImage = null;
+    document.getElementById('post-image-input').value = '';
+    document.getElementById('post-file-name').textContent = 'Файл не выбран';
+}
+
+// =============================================
+// ПОСТЫ С ФОТО
 // =============================================
 async function createPost() {
     const text = document.getElementById('post-text').value.trim();
-    if (!text) return alert('Введите текст!');
-    document.getElementById('post-text').value = '';
+    if (!text && !selectedPostImage) {
+        return alert('Введите текст или прикрепите фото!');
+    }
+    
+    const btn = document.querySelector('.post-box .input-row button');
+    btn.textContent = '⏳';
+    btn.disabled = true;
     
     try {
+        let imageUrl = null;
+        
+        // Загружаем фото если есть
+        if (selectedPostImage) {
+            const file = selectedPostImage;
+            const storageRef = storage.ref(`posts/${currentUser.uid}_${Date.now()}_${file.name}`);
+            await storageRef.put(file);
+            imageUrl = await storageRef.getDownloadURL();
+        }
+        
         await db.collection('posts').add({
             authorId: currentUser.uid,
             authorName: currentUser.displayName,
-            text: text,
+            text: text || '',
+            imageUrl: imageUrl,
             createdAt: new Date()
         });
+        
+        document.getElementById('post-text').value = '';
+        clearPostImage();
         await renderWall();
     } catch (error) {
         console.error('Ошибка создания поста:', error);
         alert('❌ Ошибка при создании поста');
     }
+    
+    btn.textContent = 'Отпр.';
+    btn.disabled = false;
 }
 
 async function renderWall() {
@@ -364,20 +427,24 @@ async function renderWall() {
         });
         
         let html = '';
-        posts.forEach(p => {
+        for (const p of posts) {
             const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
             const avatar = avatarCache.get(p.authorId) || getInitialsAvatar(p.authorName);
+            
             html += `
                 <div class="post">
-                    <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
-                    <div>
-                        <span class="name">${escapeHtml(p.authorName)}</span>
-                        <span class="date">${date}</span>
-                        <div class="text">${escapeHtml(p.text)}</div>
+                    <div class="post-header">
+                        <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
+                        <div>
+                            <span class="name">${escapeHtml(p.authorName)}</span>
+                            <span class="date">${date}</span>
+                        </div>
                     </div>
+                    ${p.text ? `<div class="post-text">${escapeHtml(p.text)}</div>` : ''}
+                    ${p.imageUrl ? `<div class="post-image"><img src="${p.imageUrl}" alt="Фото"></div>` : ''}
                 </div>
             `;
-        });
+        }
         container.innerHTML = html;
     } catch (error) {
         console.error('Ошибка загрузки постов:', error);
@@ -423,20 +490,24 @@ async function renderNews() {
         });
         
         let html = '';
-        posts.forEach(p => {
+        for (const p of posts) {
             const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
             const avatar = avatarCache.get(p.authorId) || getInitialsAvatar(p.authorName);
+            
             html += `
                 <div class="post">
-                    <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
-                    <div>
-                        <span class="name">${escapeHtml(p.authorName)}</span>
-                        <span class="date">${date}</span>
-                        <div class="text">${escapeHtml(p.text)}</div>
+                    <div class="post-header">
+                        <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
+                        <div>
+                            <span class="name">${escapeHtml(p.authorName)}</span>
+                            <span class="date">${date}</span>
+                        </div>
                     </div>
+                    ${p.text ? `<div class="post-text">${escapeHtml(p.text)}</div>` : ''}
+                    ${p.imageUrl ? `<div class="post-image"><img src="${p.imageUrl}" alt="Фото"></div>` : ''}
                 </div>
             `;
-        });
+        }
         container.innerHTML = html;
     } catch (error) {
         console.error('Ошибка загрузки новостей:', error);
@@ -668,15 +739,11 @@ function switchTab(tab) {
 // АВТОВХОД
 // =============================================
 auth.onAuthStateChanged(user => {
-    console.log('👤 Auth state changed:', user ? 'Пользователь есть' : 'Пользователя нет');
     if (user && !currentUser) {
         currentUser = user;
-        console.log('👤 Пользователь:', user.displayName, user.uid);
         enterApp();
     }
 });
-
-console.log('✅ Приложение загружено!');
 </script>
 </body>
 </html>
