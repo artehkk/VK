@@ -489,65 +489,137 @@
         }
 
         // =============================================
-        // ПОСТЫ
-        // =============================================
-        async function createPost(device) {
-            const textEl = document.getElementById(device === 'desktop' ? 'desk-post-text' : 'mob-post-text');
-            const text = textEl.value.trim();
-            if (!text) return alert("Введите текст!");
-            if (text.length > 2000) return alert("Слишком длинный пост!");
-            textEl.value = '';
-            
-            const btn = document.getElementById(device === 'desktop' ? 'desk-send-btn' : 'mob-send-btn');
-            const original = btn.innerText;
-            btn.innerText = '⏳';
-            btn.disabled = true;
-            
-            try {
-                await db.collection('posts').add({
-                    authorName: currentUser.displayName,
-                    authorId: currentUser.uid,
-                    text: text,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                if (device === 'mobile') {
-                    await renderMobileWall();
-                } else {
-                    await renderDesktopWall();
-                }
-            } catch (e) { alert("❌ Ошибка отправки"); }
-            
-            btn.innerText = original;
-            btn.disabled = false;
-        }
+// ПОСТЫ (БЕЗ ORDERBY — НЕТ ИНДЕКСОВ!)
+// =============================================
+async function createPost() {
+    const text = document.getElementById('post-text').value.trim();
+    if (!text) return alert('Введите текст!');
+    document.getElementById('post-text').value = '';
+    
+    try {
+        await db.collection('posts').add({
+            authorId: currentUser.uid,
+            authorName: currentUser.displayName,
+            text: text,
+            createdAt: new Date()
+        });
+        await renderWall();
+        await renderNews(); // Обновляем новости тоже
+    } catch (error) {
+        console.error('Ошибка при создании поста:', error);
+        alert('❌ Ошибка при создании поста');
+    }
+}
 
-        function escapeHtml(text) {
-            if (!text) return "";
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
+async function renderWall() {
+    const container = document.getElementById('wall-posts');
+    
+    try {
+        const snap = await db.collection('posts')
+            .where('authorId', '==', currentUser.uid)
+            .get();
+        
+        if (snap.empty) {
+            container.innerHTML = '<div class="empty">📝 Здесь пока пусто</div>';
+            return;
         }
+        
+        let html = '';
+        const posts = [];
+        snap.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+        
+        posts.sort((a, b) => {
+            const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+            const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+            return db2 - da;
+        });
+        
+        posts.forEach(p => {
+            const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
+            const avatar = avatarCache.get(p.authorId) || getInitialsAvatar(p.authorName);
+            html += `
+                <div class="post">
+                    <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
+                    <div>
+                        <span class="name">${escapeHtml(p.authorName)}</span>
+                        <span class="date">${date}</span>
+                        <div class="text">${escapeHtml(p.text)}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Ошибка при загрузке постов:', error);
+        container.innerHTML = '<div class="empty">❌ Ошибка загрузки постов</div>';
+    }
+}
 
-        function generateAvatar(userId, name) {
-            const hash = userId.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-            const colors = ['5E83A9','8A9CB5','A1B3C8','74A0C4','4B739B'];
-            const color = colors[Math.abs(hash) % colors.length];
-            const letter = (name || '?').charAt(0).toUpperCase();
-            return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23${color}'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='30' font-weight='bold'%3E${letter}%3C/text%3E%3C/svg%3E`;
+async function renderNews() {
+    const container = document.getElementById('news-posts');
+    
+    try {
+        // Получаем друзей
+        const friendsSnap = await db.collection('friends')
+            .where('userId', '==', currentUser.uid)
+            .get();
+        
+        const friendIds = [];
+        friendsSnap.forEach(doc => friendIds.push(doc.data().friendId));
+        
+        // Если нет друзей - показываем сообщение
+        if (friendIds.length === 0) {
+            container.innerHTML = '<div class="empty">👥 Добавьте друзей, чтобы видеть их новости</div>';
+            return;
         }
-
-        async function getUserAvatar(userId, name) {
-            if (avatarCache.has(userId)) return avatarCache.get(userId);
-            try {
-                const doc = await db.collection('users').doc(userId).get();
-                let url = doc.exists && doc.data().photoURL ? doc.data().photoURL : generateAvatar(userId, name || doc.data()?.name || '?');
-                avatarCache.set(userId, url);
-                return url;
-            } catch (e) {
-                const url = generateAvatar(userId, name || '?');
-                avatarCache.set(userId, url);
-                return url;
+        
+        // Получаем все посты (без фильтрации в запросе)
+        const allPostsSnap = await db.collection('posts')
+            .limit(100)
+            .get();
+        
+        // Фильтруем посты друзей на клиенте
+        const posts = [];
+        allPostsSnap.forEach(doc => {
+            const data = doc.data();
+            if (friendIds.includes(data.authorId)) {
+                posts.push({ id: doc.id, ...data });
             }
+        });
+        
+        if (posts.length === 0) {
+            container.innerHTML = '<div class="empty">📭 У друзей пока нет постов</div>';
+            return;
         }
+        
+        // Сортируем по дате
+        posts.sort((a, b) => {
+            const da = a.createdAt ? new Date(a.createdAt.toDate ? a.createdAt.toDate() : a.createdAt) : new Date(0);
+            const db2 = b.createdAt ? new Date(b.createdAt.toDate ? b.createdAt.toDate() : b.createdAt) : new Date(0);
+            return db2 - da;
+        });
+        
+        let html = '';
+        posts.forEach(p => {
+            const date = p.createdAt ? new Date(p.createdAt.toDate ? p.createdAt.toDate() : p.createdAt).toLocaleString('ru-RU') : 'Только что';
+            const avatar = avatarCache.get(p.authorId) || getInitialsAvatar(p.authorName);
+            html += `
+                <div class="post">
+                    <img src="${avatar}" onerror="this.src='${getInitialsAvatar(p.authorName)}'">
+                    <div>
+                        <span class="name">${escapeHtml(p.authorName)}</span>
+                        <span class="date">${date}</span>
+                        <div class="text">${escapeHtml(p.text)}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Ошибка при загрузке новостей:', error);
+        container.innerHTML = '<div class="empty">❌ Ошибка загрузки новостей</div>';
+    }
+}
 
         // =============================================
         // СТЕНА
