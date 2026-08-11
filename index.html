@@ -121,9 +121,9 @@
                 <ul>
                     <li><a href="#" onclick="showDeskPage('wall')"><b>Моя Страница</b></a></li>
                     <li><a href="#" onclick="showDeskPage('news')">Новости</a></li>
-                    <li><a href="#" onclick="showDeskPage('friends')">Мои Друзья</a></li>
+                    <li><a href="#" onclick="showDeskPage('gifts')">Подарки</a></li>
                     <li><a href="#" onclick="showDeskPage('messages')">Мои Сообщения</a></li>
-                    <li><a href="#" onclick="showDeskPage('search')">Поиск людей</a></li>
+                    <li><a href="#" onclick="showDeskPage('friends')">Мои Друзья</a></li>
                 </ul>
             </aside>
             <main class="desktop-content" id="desktop-main">
@@ -136,13 +136,11 @@
                     <div id="desktop-wall-content" style="padding:15px;"></div>
                 </div>
                 <div id="desk-page-news" style="display:none; padding:15px;"><h3>Новости друзей</h3><div id="desk-news-content"></div></div>
-                <div id="desk-page-friends" style="display:none; padding:15px;"><h3>Мои Друзья</h3><div id="desk-friends-list"></div></div>
-                <div id="desk-page-search" style="display:none; padding:15px;">
-                    <h3>Поиск</h3>
-                    <input type="text" id="desk-search-input" placeholder="Введите имя..." style="width:100%; padding:8px; border:1px solid #ccc; margin-bottom:10px;" oninput="searchUsers('desktop')">
-                    <div id="desk-search-results"></div>
+                <div id="desk-page-gifts" style="display:none; padding:15px;">
+                    <div id="desk-gifts-content"></div>
                 </div>
                 <div id="desk-page-messages" style="display:none; padding:15px;"><h3>Сообщения</h3><div id="desk-msg-list"></div></div>
+                <div id="desk-page-friends" style="display:none; padding:15px;"><h3>Мои Друзья</h3><div id="desk-friends-list"></div></div>
             </main>
         </div>
     </div>
@@ -154,7 +152,7 @@
             <a href="#" class="logout-btn" onclick="logout()">Выход</a>
         </div>
 
-        <!-- МОБИЛЬНЫЕ ВКЛАДКИ -->
+        <!-- ВКЛАДКИ -->
         <div id="mob-wall" class="mobile-view-container active">
             <div class="mobile-profile-header" id="mob-profile-header">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%235E83A9'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='30' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" id="mob-profile-avatar" class="mobile-profile-avatar">
@@ -190,6 +188,10 @@
             <div class="mobile-empty"><h3>Загрузка новостей...</h3></div>
         </div>
 
+        <div id="mob-gifts" class="mobile-view-container">
+            <div id="mob-gifts-content"></div>
+        </div>
+
         <div id="mob-msg" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;"><h3 style="font-size:15px; color:#000;">Сообщения</h3></div>
             <div id="mobile-msg-list"></div>
@@ -209,6 +211,9 @@
             </button>
             <button class="mobile-tab-btn active" onclick="switchMobTab('wall')">
                 <div class="tab-icon"></div>Моя Стр.
+            </button>
+            <button class="mobile-tab-btn" onclick="switchMobTab('gifts')">
+                <div class="tab-icon"></div>Подарки
             </button>
             <button class="mobile-tab-btn" onclick="switchMobTab('msg')">
                 <div class="tab-icon"></div>Сообщения
@@ -255,7 +260,7 @@
         let unsubscribeChat = null;
         let unsubscribeWall = null;
         let unsubscribeNews = null;
-        let unsubscribeNewsDesktop = null;
+        let unsubscribeGifts = null;
         let isRegisterMode = false;
         const avatarCache = new Map();
 
@@ -291,7 +296,7 @@
                         status: "",
                         about: "",
                         photoURL: "",
-                        coins: 100, // СТАРТОВЫЕ МОНЕТЫ
+                        coins: 100,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     alert("Аккаунт создан! Вы получили 100 монет.");
@@ -330,7 +335,7 @@
             if (unsubscribeChat) unsubscribeChat();
             if (unsubscribeWall) unsubscribeWall();
             if (unsubscribeNews) unsubscribeNews();
-            if (unsubscribeNewsDesktop) unsubscribeNewsDesktop();
+            if (unsubscribeGifts) unsubscribeGifts();
             auth.signOut();
             currentUser = null;
             avatarCache.clear();
@@ -376,7 +381,6 @@
                 if (data.city) infoHtml += `<div>📍 <span>${escapeHtml(data.city)}</span></div>`;
                 if (data.status) infoHtml += `<div>💍 <span>${escapeHtml(data.status)}</span></div>`;
                 if (data.about) infoHtml += `<div>📝 <span>${escapeHtml(data.about)}</span></div>`;
-                // ДОБАВЛЕНО ОТОБРАЖЕНИЕ МОНЕТ
                 if (data.coins !== undefined) infoHtml += `<div>💰 <span>${data.coins} монет</span></div>`;
                 document.getElementById('mob-profile-info').innerHTML = infoHtml;
             }
@@ -476,11 +480,13 @@
             if (device === 'desktop') {
                 renderDesktopWall();
                 renderDesktopNews();
+                renderDesktopGifts();
                 renderDesktopFriends();
                 renderDesktopMessages();
             } else {
                 renderMobileWall();
                 renderMobileNews();
+                renderMobileGifts();
                 renderMobileFriends();
                 renderMobileMessages();
             }
@@ -515,7 +521,7 @@
         }
 
         // =============================================
-        // СТЕНА И НОВОСТИ
+        // СТЕНА
         // =============================================
         async function renderMobileWall() {
             if (unsubscribeWall) { unsubscribeWall(); unsubscribeWall = null; }
@@ -554,6 +560,9 @@
             } catch (e) { container.innerHTML = `<div style="padding:20px;color:red;">Ошибка загрузки</div>`; }
         }
 
+        // =============================================
+        // НОВОСТИ
+        // =============================================
         async function renderMobileNews() {
             if (unsubscribeNews) unsubscribeNews();
             const container = document.getElementById('mob-news');
@@ -611,7 +620,7 @@
         }
 
         // =============================================
-        // ДРУЗЬЯ И ЧАТЫ
+        // ДРУЗЬЯ
         // =============================================
         async function searchUsers(device) {
             const inputId = device === 'desktop' ? 'desk-search-input' : 'mob-search-input';
@@ -676,6 +685,9 @@
             } catch (e) {}
         }
 
+        // =============================================
+        // ЧАТЫ
+        // =============================================
         async function openChat(friendId) {
             document.getElementById('chat-messages-box').innerHTML = '<div style="padding:10px;color:#777;text-align:center;">Загрузка чата...</div>';
             document.getElementById('chat-interface').style.display = 'flex';
@@ -766,29 +778,156 @@
         }
 
         // =============================================
+        // ПОДАРКИ
+        // =============================================
+        const GIFTS = [
+            { id: 'rose', name: '🌹 Роза', price: 10 },
+            { id: 'bear', name: '🧸 Мишка', price: 15 },
+            { id: 'cactus', name: '🌵 Кактус', price: 5 },
+            { id: 'heart', name: '❤️ Сердечко', price: 20 }
+        ];
+
+        async function renderMobileGifts() {
+            if (unsubscribeGifts) unsubscribeGifts();
+            const container = document.getElementById('mob-gifts-content');
+
+            // 1. Магазин
+            let storeHtml = `
+                <div class="gifts-store-window">
+                    <h3>🎁 Магазин подарков</h3>
+                    <div class="gift-grid">
+            `;
+            GIFTS.forEach(g => {
+                storeHtml += `
+                    <div class="gift-item" onclick="buyGift('${g.id}')">
+                        <img src="gifts/${g.id}.png" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2225%22 y=%2230%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%23999%22%3E${g.id}%3C/text%3E%3C/svg%3E'" />
+                        <span class="gift-name">${g.name}</span>
+                        <span class="gift-price">${g.price} монет</span>
+                    </div>
+                `;
+            });
+            storeHtml += `</div></div>`;
+            
+            // 2. Мои подарки
+            const snap = await db.collection('gifts').where('toId', '==', currentUser.uid).orderBy('createdAt', 'desc').get();
+            let myHtml = `<div class="gifts-store-window"><h3>💝 Мои подарки</h3><div class="my-gifts-grid">`;
+            if (snap.empty) {
+                myHtml += `<div style="color:#777;font-size:13px;">У вас пока нет подарков</div>`;
+            } else {
+                snap.forEach(doc => {
+                    const g = doc.data();
+                    const gift = GIFTS.find(x => x.id === g.giftId);
+                    const iconName = gift ? gift.id : 'unknown';
+                    myHtml += `
+                        <div class="my-gift-item">
+                            <img src="gifts/${iconName}.png" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2220%22 y=%2225%22 font-size=%2210%22 text-anchor=%22middle%22 fill=%22%23999%22%3E${iconName}%3C/text%3E%3C/svg%3E'" />
+                            <span class="gift-from">от ${escapeHtml(g.fromName)}</span>
+                            <button class="return-btn" onclick="returnCoins('${doc.id}', '${g.fromId}')">↩️ Вернуть монеты</button>
+                        </div>
+                    `;
+                });
+            }
+            myHtml += `</div></div>`;
+            container.innerHTML = storeHtml + myHtml;
+        }
+
+        async function renderDesktopGifts() {
+            const container = document.getElementById('desk-gifts-content');
+            container.innerHTML = `<div style="padding:20px;">Загрузка...</div>`;
+            // Аналогично мобильной версии
+            await renderMobileGifts();
+            container.innerHTML = document.getElementById('mob-gifts-content').innerHTML;
+        }
+
+        async function buyGift(giftId) {
+            const userData = (await db.collection('users').doc(currentUser.uid).get()).data();
+            if (!userData) return;
+            const gift = GIFTS.find(g => g.id === giftId);
+            if (!gift) return alert("Подарок не найден!");
+            if (userData.coins < gift.price) return alert(`Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
+
+            const friendNames = [];
+            const friendSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+            friendSnap.forEach(doc => friendNames.push(doc.data().friendName));
+            if (!friendNames.length) return alert("У вас нет друзей, чтобы дарить подарки!");
+
+            const recipientName = prompt(`Кому подарить ${gift.name}?\nДрузья: ${friendNames.join(', ')}`);
+            if (!recipientName) return;
+            if (!friendNames.includes(recipientName)) return alert("Этот пользователь не у вас в друзьях!");
+
+            const snap = await db.collection('users').where('name', '==', recipientName).get();
+            if (snap.empty) return alert("Пользователь не найден!");
+            const recipientId = snap.docs[0].id;
+
+            await db.collection('users').doc(currentUser.uid).update({
+                coins: firebase.firestore.FieldValue.increment(-gift.price)
+            });
+
+            await db.collection('gifts').add({
+                fromId: currentUser.uid,
+                fromName: currentUser.displayName,
+                toId: recipientId,
+                toName: recipientName,
+                giftId: giftId,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert(`🎁 ${gift.name} успешно подарен ${recipientName}!`);
+            loadUserProfile();
+        }
+
+        async function returnCoins(giftDocId, fromId) {
+            const docRef = db.collection('gifts').doc(giftDocId);
+            const doc = await docRef.get();
+            if (!doc.exists) return alert("Подарок не найден!");
+            if (doc.data().returned) return alert("Вы уже вернули монеты за этот подарок!");
+
+            const gift = GIFTS.find(g => g.id === doc.data().giftId);
+            if (!gift) return alert("Ошибка: подарок не найден в каталоге");
+            const myData = (await db.collection('users').doc(currentUser.uid).get()).data();
+            if (myData.coins < gift.price) return alert(`У вас недостаточно монет, чтобы вернуть! Нужно ${gift.price}`);
+
+            await db.collection('users').doc(fromId).update({
+                coins: firebase.firestore.FieldValue.increment(gift.price)
+            });
+            await db.collection('users').doc(currentUser.uid).update({
+                coins: firebase.firestore.FieldValue.increment(-gift.price)
+            });
+            await docRef.update({ returned: true });
+
+            alert(`✅ Монеты (${gift.price}) возвращены пользователю ${escapeHtml(doc.data().fromName)}. Подарок остался у вас.`);
+            loadUserProfile();
+        }
+
+        // =============================================
         // НАВИГАЦИЯ
         // =============================================
         function switchMobTab(tab) {
             if (unsubscribeChat) unsubscribeChat();
             if (unsubscribeWall) unsubscribeWall();
             if (unsubscribeNews) unsubscribeNews();
+            if (unsubscribeGifts) unsubscribeGifts();
+            
             document.querySelectorAll('.mobile-view-container').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.mobile-tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('mob-' + tab).classList.add('active');
             const btns = document.querySelectorAll('.mobile-tab-btn');
-            const map = { news: 0, wall: 1, msg: 2, friends: 3 };
+            const map = { news: 0, wall: 1, gifts: 2, msg: 3, friends: 4 };
             if (map[tab] !== undefined) btns[map[tab]].classList.add('active');
+
             if (tab === 'wall') { loadUserProfile(); renderMobileWall(); } 
             else if (tab === 'friends') renderMobileFriends();
             else if (tab === 'msg') renderMobileMessages();
             else if (tab === 'news') renderMobileNews();
+            else if (tab === 'gifts') renderMobileGifts();
         }
 
         function showDeskPage(page) {
-            ['wall','news','friends','search','messages'].forEach(p => document.getElementById('desk-page-' + p).style.display = 'none');
+            ['wall','news','gifts','friends','messages'].forEach(p => document.getElementById('desk-page-' + p).style.display = 'none');
             document.getElementById('desk-page-' + page).style.display = 'block';
             if (page === 'wall') renderDesktopWall();
             else if (page === 'news') renderDesktopNews();
+            else if (page === 'gifts') renderDesktopGifts();
             else if (page === 'friends') renderDesktopFriends();
             else if (page === 'messages') renderDesktopMessages();
         }
