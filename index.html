@@ -61,7 +61,10 @@
         .friend-item { background: white; padding: 12px; margin: 0 10px 8px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer; }
         .friend-item:hover { background: #f4f6f8; }
         .friend-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; }
-        .friend-item .info { display: flex; gap: 10px; align-items: center; }
+        .friend-item .info { display: flex; gap: 10px; align-items: center; flex: 1; }
+        .friend-item .info .friend-name { font-weight: bold; }
+        .friend-item .info .last-msg { font-size: 12px; color: #666; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .friend-item .info .last-time { font-size: 11px; color: #999; margin-left: 5px; }
         .friend-item .add-btn { background: #5E83A9; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
         .friend-item .added { color: #999; font-size: 12px; }
         .friend-item .chat-btn { background: #5cb85c; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 5px; }
@@ -211,13 +214,22 @@ let selectedPostImage = null;
 let currentChatPartnerId = null;
 let currentChatPartnerName = null;
 let unsubscribeChat = null;
+let GIFTS = [];
 
-const GIFTS = [
-    { id: 'rose', icon: '🌹', name: 'Роза', price: 10 },
-    { id: 'bear', icon: '🧸', name: 'Мишка', price: 15 },
-    { id: 'cactus', icon: '🌵', name: 'Кактус', price: 5 },
-    { id: 'heart', icon: '❤️', name: 'Сердце', price: 20 }
-];
+// Загружаем подарки с сервера
+async function loadGifts() {
+    try {
+        const response = await fetch('/api/gifts');
+        GIFTS = await response.json();
+    } catch (e) {
+        GIFTS = [
+            { id: 'rose', icon: '🌹', name: 'Роза', price: 10 },
+            { id: 'bear', icon: '🧸', name: 'Мишка', price: 15 },
+            { id: 'cactus', icon: '🌵', name: 'Кактус', price: 5 },
+            { id: 'heart', icon: '❤️', name: 'Сердечко', price: 20 }
+        ];
+    }
+}
 
 // =============================================
 // АВТОРИЗАЦИЯ
@@ -241,10 +253,6 @@ async function handleAuth() {
     }
     if (pass.length < 6) {
         showError('Пароль минимум 6 символов!');
-        return;
-    }
-    if (name.length < 2) {
-        showError('Имя минимум 2 символа!');
         return;
     }
 
@@ -309,7 +317,10 @@ function logout() {
     auth.signOut();
     currentUser = null;
     avatarCache.clear();
-    if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+    if (unsubscribeChat) { 
+        try { unsubscribeChat(); } catch(e) {}
+        unsubscribeChat = null; 
+    }
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     document.getElementById('chat-interface').style.display = 'none';
@@ -322,6 +333,7 @@ async function enterApp() {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     
+    await loadGifts();
     await loadProfile();
     await renderWall();
     await renderNews();
@@ -576,10 +588,10 @@ async function searchUsers() {
         
         let html = '';
         let found = 0;
-        allUsers.forEach(doc => {
+        for (const doc of allUsers.docs) {
             const data = doc.data();
-            if (doc.id === currentUser.uid) return;
-            if (query && !data.name.toLowerCase().includes(query)) return;
+            if (doc.id === currentUser.uid) continue;
+            if (query && !data.name.toLowerCase().includes(query)) continue;
             found++;
             const isFriend = friendIds.has(doc.id);
             const avatar = avatarCache.get(doc.id) || getInitialsAvatar(data.name);
@@ -595,7 +607,7 @@ async function searchUsers() {
                     </div>
                 </div>
             `;
-        });
+        }
         
         if (found === 0 && query) {
             container.innerHTML = '<div class="empty">🔍 Ничего не найдено</div>';
@@ -635,7 +647,7 @@ async function addFriend(friendId, friendName) {
 }
 
 // =============================================
-// ЧАТЫ
+// ЧАТЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 // =============================================
 async function renderChatList() {
     const container = document.getElementById('chat-list');
@@ -655,25 +667,47 @@ async function renderChatList() {
         for (const doc of snap.docs) {
             const f = doc.data();
             const friendId = f.friendId;
-            const avatar = await getUserAvatar(friendId, f.friendName);
+            
+            // Получаем аватарку друга
+            let avatar = avatarCache.get(friendId);
+            if (!avatar) {
+                try {
+                    const userDoc = await db.collection('users').doc(friendId).get();
+                    if (userDoc.exists) {
+                        avatar = userDoc.data().photoURL || getInitialsAvatar(f.friendName);
+                        avatarCache.set(friendId, avatar);
+                    } else {
+                        avatar = getInitialsAvatar(f.friendName);
+                    }
+                } catch (e) {
+                    avatar = getInitialsAvatar(f.friendName);
+                }
+            }
             
             // Проверяем последнее сообщение
             const chatId = [currentUser.uid, friendId].sort().join('_');
-            const lastMsgSnap = await db.collection('messages')
-                .where('chatId', '==', chatId)
-                .orderBy('createdAt', 'desc')
-                .limit(1)
-                .get();
-            
-            let lastMsg = '';
+            let lastMsg = 'Нет сообщений';
             let lastTime = '';
-            if (!lastMsgSnap.empty) {
-                const msg = lastMsgSnap.docs[0].data();
-                lastMsg = msg.text || '📎 Фото';
-                if (msg.createdAt) {
-                    const date = msg.createdAt.toDate ? msg.createdAt.toDate() : msg.createdAt;
-                    lastTime = date.toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            
+            try {
+                const lastMsgSnap = await db.collection('messages')
+                    .where('chatId', '==', chatId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(1)
+                    .get();
+                
+                if (!lastMsgSnap.empty) {
+                    const msg = lastMsgSnap.docs[0].data();
+                    lastMsg = msg.text || '📎';
+                    if (msg.createdAt) {
+                        try {
+                            const date = msg.createdAt.toDate ? msg.createdAt.toDate() : new Date(msg.createdAt);
+                            lastTime = date.toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                        } catch(e) {}
+                    }
                 }
+            } catch (e) {
+                console.warn('Ошибка получения последнего сообщения:', e);
             }
             
             html += `
@@ -681,11 +715,11 @@ async function renderChatList() {
                     <div class="info">
                         <img src="${avatar}" onerror="this.src='${getInitialsAvatar(f.friendName)}'">
                         <div>
-                            <b>${escapeHtml(f.friendName || 'Друг')}</b>
-                            ${lastMsg ? `<div style="font-size:12px;color:#666;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(lastMsg)}</div>` : ''}
+                            <div class="friend-name">${escapeHtml(f.friendName || 'Друг')}</div>
+                            <div class="last-msg">${escapeHtml(lastMsg)}</div>
                         </div>
                     </div>
-                    ${lastTime ? `<span style="font-size:11px;color:#999;">${lastTime}</span>` : ''}
+                    ${lastTime ? `<div class="last-time">${lastTime}</div>` : ''}
                 </div>
             `;
         }
@@ -696,22 +730,12 @@ async function renderChatList() {
     }
 }
 
-async function getUserAvatar(uid, name) {
-    if (avatarCache.has(uid)) return avatarCache.get(uid);
-    try {
-        const doc = await db.collection('users').doc(uid).get();
-        if (doc.exists && doc.data().photoURL) {
-            avatarCache.set(uid, doc.data().photoURL);
-            return doc.data().photoURL;
-        }
-    } catch (e) {}
-    const avatar = getInitialsAvatar(name);
-    avatarCache.set(uid, avatar);
-    return avatar;
-}
-
 async function openChat(friendId) {
-    if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+    // Закрываем предыдущую подписку
+    if (unsubscribeChat) { 
+        try { unsubscribeChat(); } catch(e) {}
+        unsubscribeChat = null; 
+    }
     
     document.getElementById('chat-messages-box').innerHTML = '<div style="padding:10px;color:#777;text-align:center;">⏳ Загрузка чата...</div>';
     document.getElementById('chat-interface').style.display = 'flex';
@@ -725,8 +749,12 @@ async function openChat(friendId) {
         currentChatPartnerId = friendId;
         currentChatPartnerName = doc.data().name || 'Друг';
         document.getElementById('chat-partner-name').innerText = currentChatPartnerName;
+        
+        // Подписываемся на сообщения
         renderChatMessages();
     } catch (e) {
+        console.error('Ошибка открытия чата:', e);
+        document.getElementById('chat-interface').style.display = 'none';
         alert('❌ Ошибка открытия чата');
     }
 }
@@ -734,57 +762,89 @@ async function openChat(friendId) {
 function closeChat() {
     document.getElementById('chat-interface').style.display = 'none';
     if (unsubscribeChat) {
-        unsubscribeChat();
+        try { unsubscribeChat(); } catch(e) {}
         unsubscribeChat = null;
     }
     currentChatPartnerId = null;
+    currentChatPartnerName = null;
     renderChatList();
 }
 
 function renderChatMessages() {
     const box = document.getElementById('chat-messages-box');
+    
+    // Очищаем старую подписку
     if (unsubscribeChat) {
-        unsubscribeChat();
+        try { unsubscribeChat(); } catch(e) {}
         unsubscribeChat = null;
     }
     
+    if (!currentChatPartnerId) {
+        box.innerHTML = '<div style="padding:10px;color:#777;text-align:center;">❌ Ошибка: чат не выбран</div>';
+        return;
+    }
+    
     const chatId = [currentUser.uid, currentChatPartnerId].sort().join('_');
-    unsubscribeChat = db.collection('messages')
-        .where('chatId', '==', chatId)
-        .orderBy('createdAt')
-        .onSnapshot(snapshot => {
-            if (snapshot.empty) {
-                box.innerHTML = '<div style="padding:10px;color:#777;text-align:center;">💬 Начните общение</div>';
-                return;
-            }
-            
-            const wasScrolledToBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 10;
-            
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const m = change.doc.data();
-                    const isMe = m.fromId === currentUser.uid;
-                    const date = m.createdAt ? (m.createdAt.toDate ? m.createdAt.toDate() : m.createdAt).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : 'Сейчас';
-                    const msgHtml = `
-                        <div class="msg-bubble ${isMe ? 'my-msg' : ''}">
-                            ${escapeHtml(m.text)}
-                            <div style="font-size:10px;color:#999;margin-top:2px;">${date}</div>
-                        </div>
-                    `;
-                    box.insertAdjacentHTML('beforeend', msgHtml);
+    
+    try {
+        unsubscribeChat = db.collection('messages')
+            .where('chatId', '==', chatId)
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(snapshot => {
+                if (snapshot.empty) {
+                    box.innerHTML = '<div style="padding:10px;color:#777;text-align:center;">💬 Начните общение</div>';
+                    return;
                 }
+                
+                // Проверяем, был ли скролл внизу
+                const wasScrolledToBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 50;
+                
+                // Обрабатываем изменения
+                let hasNewMessages = false;
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const m = change.doc.data();
+                        const isMe = m.fromId === currentUser.uid;
+                        let date = 'Сейчас';
+                        if (m.createdAt) {
+                            try {
+                                const d = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+                                date = d.toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                            } catch(e) {}
+                        }
+                        const msgHtml = `
+                            <div class="msg-bubble ${isMe ? 'my-msg' : ''}">
+                                ${escapeHtml(m.text)}
+                                <div style="font-size:10px;color:#999;margin-top:2px;">${date}</div>
+                            </div>
+                        `;
+                        box.insertAdjacentHTML('beforeend', msgHtml);
+                        hasNewMessages = true;
+                    }
+                });
+                
+                // Если было добавлено сообщение или скролл был внизу - прокручиваем вниз
+                if (hasNewMessages || wasScrolledToBottom) {
+                    setTimeout(() => { 
+                        box.scrollTop = box.scrollHeight; 
+                    }, 100);
+                }
+            }, (error) => {
+                console.error('Ошибка подписки на сообщения:', error);
+                box.innerHTML = '<div style="padding:10px;color:red;text-align:center;">❌ Ошибка подключения к чату</div>';
             });
-            
-            if (wasScrolledToBottom || snapshot.docChanges().length > 0) {
-                setTimeout(() => { box.scrollTop = box.scrollHeight; }, 50);
-            }
-        });
+    } catch (error) {
+        console.error('Ошибка:', error);
+        box.innerHTML = '<div style="padding:10px;color:red;text-align:center;">❌ Ошибка загрузки сообщений</div>';
+    }
 }
 
 async function sendMessage() {
     const input = document.getElementById('chat-input');
     const text = input.value.trim();
-    if (!text || !currentChatPartnerId) return;
+    if (!text || !currentChatPartnerId) {
+        return;
+    }
     input.value = '';
     
     const chatId = [currentUser.uid, currentChatPartnerId].sort().join('_');
@@ -797,6 +857,7 @@ async function sendMessage() {
             createdAt: new Date()
         });
     } catch (e) {
+        console.error('Ошибка отправки:', e);
         alert("❌ Ошибка отправки сообщения");
     }
 }
@@ -931,7 +992,11 @@ async function returnGift(docId, fromId, giftId) {
 // НАВИГАЦИЯ
 // =============================================
 function switchTab(tab) {
-    if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+    // Закрываем чат при переключении
+    if (unsubscribeChat) { 
+        try { unsubscribeChat(); } catch(e) {}
+        unsubscribeChat = null; 
+    }
     document.getElementById('chat-interface').style.display = 'none';
     
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
@@ -939,7 +1004,8 @@ function switchTab(tab) {
     
     document.getElementById('tab-' + tab).classList.add('active');
     const map = { wall: 0, news: 1, friends: 2, messages: 3, gifts: 4 };
-    document.querySelectorAll('.nav button')[map[tab]].classList.add('active');
+    const btns = document.querySelectorAll('.nav button');
+    if (btns[map[tab]]) btns[map[tab]].classList.add('active');
     
     if (tab === 'wall') renderWall();
     else if (tab === 'news') renderNews();
@@ -952,11 +1018,14 @@ function switchTab(tab) {
 // АВТОВХОД
 // =============================================
 auth.onAuthStateChanged(user => {
+    console.log('Auth state changed:', user ? 'Пользователь есть' : 'Нет пользователя');
     if (user && !currentUser) {
         currentUser = user;
         enterApp();
     }
 });
+
+console.log('🚀 VK 2011 загружен!');
 </script>
 </body>
 </html>
