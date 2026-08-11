@@ -154,11 +154,11 @@
             <a href="#" class="logout-btn" onclick="logout()">Выход</a>
         </div>
 
-        <div id="mob-news" class="mobile-view-container active">
+        <div id="mob-news" class="mobile-view-container">
             <div class="mobile-empty"><h3>Загрузка новостей...</h3></div>
         </div>
 
-        <div id="mob-wall" class="mobile-view-container">
+        <div id="mob-wall" class="mobile-view-container active">
             <div class="mobile-profile-header" id="mob-profile-header">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%235E83A9'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='30' font-weight='bold'%3E?%3C/text%3E%3C/svg%3E" id="mob-profile-avatar" class="mobile-profile-avatar">
                 <div>
@@ -203,10 +203,10 @@
         </div>
 
         <nav class="mobile-bottom-nav">
-            <button class="mobile-tab-btn active" onclick="switchMobTab('news')">
+            <button class="mobile-tab-btn" onclick="switchMobTab('news')">
                 <div class="tab-icon"></div>Новости
             </button>
-            <button class="mobile-tab-btn" onclick="switchMobTab('wall')">
+            <button class="mobile-tab-btn active" onclick="switchMobTab('wall')">
                 <div class="tab-icon"></div>Моя Стр.
             </button>
             <button class="mobile-tab-btn" onclick="switchMobTab('msg')">
@@ -361,7 +361,7 @@
                 document.getElementById('desktop-app').style.display = 'none';
                 document.getElementById('mobile-app').style.display = 'block';
                 await loadUserProfile();
-                switchMobTab('news');
+                switchMobTab('wall'); // ЗАМЕНИЛИ 'news' НА 'wall'
             } else {
                 document.getElementById('desktop-app').style.display = 'block';
                 document.getElementById('mobile-app').style.display = 'none';
