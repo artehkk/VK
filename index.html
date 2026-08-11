@@ -28,15 +28,16 @@
         .desktop-view { display: none; }
         .desktop-header { background: linear-gradient(to bottom, #6A96C4, #4B739B); height: 32px; border-bottom: 1px solid #2F5882; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 12px; font-weight: bold; }
         .desktop-layout { display: grid; grid-template-columns: 200px 1fr; max-width: 980px; margin: 15px auto; gap: 15px; }
-        .desktop-sidebar a { display: block; padding: 3px 0; }
-        .desktop-content { background: #fff; border: 1px solid #C5D0DB; }
+        .desktop-sidebar a { display: block; padding: 3px 0; cursor: pointer; }
+        .desktop-sidebar a:hover { text-decoration: underline; }
+        .desktop-content { background: #fff; border: 1px solid #C5D0DB; min-height: 500px; }
         .desktop-profile-title { padding: 12px 15px 8px; border-bottom: 1px solid #E4EAF0; font-size: 20px; font-weight: normal; color: #000; }
         .desktop-create-post { background: #F9F9F9; padding: 10px; border-bottom: 1px solid #E4EAF0; display: flex; flex-direction: column; gap: 8px; }
         .desktop-create-post textarea { width: 100%; height: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 2px; resize: vertical; max-height: 150px; font-family: inherit; }
         .desktop-create-post button { align-self: flex-end; background: #537B9B; color: white; border: 1px solid #3F6484; padding: 5px 15px; border-radius: 2px; cursor: pointer; }
 
         .desktop-post, .mobile-post { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; gap: 10px; }
-        .desktop-post img { width: 55px; height: 55px; border-radius: 50%; border: 1px solid #C5D0DB; object-fit: cover; }
+        .desktop-post img, .mobile-post img { width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; flex-shrink: 0; }
         .desktop-post .author, .mobile-post .author { font-weight: bold; color: #2B587A; font-size: 15px; display: block; }
         .desktop-post .date, .mobile-post .date { color: #999; font-size: 11px; margin-top: 2px; display: block; }
         .desktop-post .text, .mobile-post .text { margin-top: 5px; line-height: 1.4; font-size: 14px; color: #333; white-space: pre-wrap; word-break: break-word; }
@@ -54,17 +55,16 @@
         .mobile-empty { padding: 40px 20px; text-align: center; color: #666; }
         
         .mobile-profile-header { background: #fff; padding: 15px; border-bottom: 1px solid #ddd; display: flex; gap: 15px; align-items: center; }
-        .mobile-profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #ddd; object-fit: cover; }
+        .mobile-profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #ddd; object-fit: cover; flex-shrink: 0; }
         .mobile-profile-name { font-size: 18px; font-weight: bold; color: #000; }
         .mobile-create-post { background: #fff; padding: 10px; border-bottom: 1px solid #eee; display: flex; gap: 8px; }
         .mobile-create-post textarea { flex: 1; border: 1px solid #ccc; border-radius: 5px; padding: 5px; height: 40px; resize: none; max-height: 150px; font-family: inherit; font-size: 14px; background: #F9F9F9; }
         .mobile-create-post button { background: #5E83A9; color: white; border: 1px solid #3A6087; padding: 0 15px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; }
         
-        .mobile-post img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; }
         .friend-item, .chat-item { background: #fff; border-bottom: 1px solid #eee; padding: 12px 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .friend-item:hover, .chat-item:hover { background: #f4f6f8; }
         .friend-info { display: flex; gap: 10px; align-items: center; }
-        .friend-info img { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; }
+        .friend-info img { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; flex-shrink: 0; }
         .add-btn { color: #fff; background: #5E83A9; padding: 4px 12px; border-radius: 3px; font-size: 12px; border: 1px solid #3F6484; cursor: pointer; }
         
         #chat-interface { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F2F2F2; z-index: 9999; flex-direction: column; }
@@ -88,25 +88,23 @@
         .delete-wall-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-weight: bold; }
         .delete-wall-btn:hover { background: #c9302c; }
 
-        #offline-banner { display: none; background: #d9534f; color: white; text-align: center; padding: 5px; font-size: 12px; position: sticky; top: 44px; z-index: 101; }
-
         .gift-item { display: inline-block; text-align: center; padding: 8px; margin: 5px; background: #f9f9f9; border-radius: 8px; cursor: pointer; border: 1px solid #eee; min-width: 70px; }
         .gift-item:hover { background: #e8e8e8; }
-        .gift-item img { width: 40px; height: 40px; display: block; margin: 0 auto; }
         .gift-name { font-size: 12px; display: block; }
         .gift-price { font-size: 10px; color: #5E83A9; }
         .my-gift-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .my-gift-item img { width: 35px; height: 35px; border-radius: 50%; }
         .gift-from { flex: 1; font-size: 13px; }
         .return-btn { background: #d9534f; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; }
 
         @media (min-width: 769px) { .desktop-view { display: block; } .mobile-view { display: none !important; } }
         @media (max-width: 768px) { .desktop-view { display: none !important; } .mobile-view { display: block; } }
+
+        .loading { text-align: center; padding: 40px; color: #999; }
+        .loading::after { content: '...'; animation: dots 1.5s infinite; }
+        @keyframes dots { 0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
     </style>
 </head>
 <body>
-
-    <div id="offline-banner">⚠️ Нет соединения с интернетом. Проверьте подключение.</div>
 
     <!-- ЭКРАН ВХОДА -->
     <div id="auth-screen">
@@ -123,18 +121,18 @@
     <!-- ДЕСКТОП -->
     <div id="desktop-app" class="desktop-view">
         <div class="desktop-header">
-            <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:3px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#">главная</a> <a href="#">поиск</a></div>
+            <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:3px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#">главная</a></div>
             <div><a href="#" class="logout-btn" onclick="logout()">выйти</a></div>
         </div>
         <div class="desktop-layout">
             <aside class="desktop-sidebar">
                 <ul>
-                    <li><a href="#" onclick="showDeskPage('wall')"><b>Моя Страница</b></a></li>
-                    <li><a href="#" onclick="showDeskPage('news')">Новости</a></li>
-                    <li><a href="#" onclick="showDeskPage('friends')">Мои Друзья</a></li>
-                    <li><a href="#" onclick="showDeskPage('messages')">Мои Сообщения</a></li>
-                    <li><a href="#" onclick="showDeskPage('search')">Поиск людей</a></li>
-                    <li><a href="#" onclick="showDeskPage('gifts')">🎁 Подарки</a></li>
+                    <li><a onclick="showDeskPage('wall')"><b>Моя Страница</b></a></li>
+                    <li><a onclick="showDeskPage('news')">Новости</a></li>
+                    <li><a onclick="showDeskPage('friends')">Мои Друзья</a></li>
+                    <li><a onclick="showDeskPage('messages')">Мои Сообщения</a></li>
+                    <li><a onclick="showDeskPage('search')">Поиск людей</a></li>
+                    <li><a onclick="showDeskPage('gifts')">🎁 Подарки</a></li>
                 </ul>
             </aside>
             <main class="desktop-content" id="desktop-main">
@@ -194,17 +192,17 @@
                 <textarea id="mob-post-text" placeholder="Что у вас нового?"></textarea>
                 <button onclick="createPost('mobile')" id="mob-send-btn">Отпр.</button>
             </div>
-            <div id="mobile-wall-content"></div>
+            <div id="mobile-wall-content"><div class="loading">Загрузка</div></div>
         </div>
 
         <div id="mob-news" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;"><h3 style="font-size:15px; color:#000;">Новости друзей</h3></div>
-            <div id="mobile-news-content"></div>
+            <div id="mobile-news-content"><div class="loading">Загрузка</div></div>
         </div>
 
         <div id="mob-msg" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;"><h3 style="font-size:15px; color:#000;">Сообщения</h3></div>
-            <div id="mobile-msg-list"></div>
+            <div id="mobile-msg-list"><div class="loading">Загрузка</div></div>
         </div>
 
         <div id="mob-friends" class="mobile-view-container">
@@ -212,12 +210,12 @@
                 <h3 style="font-size:15px; color:#000;">Друзья</h3>
                 <input type="text" id="mob-search-input" placeholder="Поиск людей" style="width:100%; padding:6px; border:1px solid #ccc; margin-top:5px; border-radius:4px;" oninput="searchUsers('mobile')">
             </div>
-            <div id="mobile-friends-list"></div>
+            <div id="mobile-friends-list"><div class="loading">Загрузка</div></div>
         </div>
 
         <div id="mob-gifts" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;"><h3 style="font-size:15px; color:#000;">🎁 Подарки</h3></div>
-            <div id="mobile-gifts-content"></div>
+            <div id="mobile-gifts-content"><div class="loading">Загрузка</div></div>
         </div>
 
         <nav class="mobile-bottom-nav">
@@ -282,7 +280,6 @@
         let currentChatPartnerName = null;
         let unsubscribeChat = null;
         let unsubscribeWall = null;
-        let unsubscribeNews = null;
         let isRegisterMode = false;
         const avatarCache = new Map();
 
@@ -327,6 +324,15 @@
                         coins: 100,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
+                    
+                    // Создаем приветственный пост
+                    await db.collection('posts').add({
+                        authorName: name,
+                        authorId: cred.user.uid,
+                        text: "👋 Привет! Это мой первый пост в VK 2011!",
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
                     alert("✅ Аккаунт создан! Вы получили 100 монет.");
                     currentUser = auth.currentUser;
                     enterApp();
@@ -344,7 +350,7 @@
                         return;
                     }
                 }
-                return showAuthError("❌ Пользователь не найден. Проверьте имя или зарегистрируйтесь.");
+                return showAuthError("❌ Пользователь не найден.");
 
             } catch (e) {
                 if (e.code === 'auth/user-not-found') return showAuthError("❌ Неверный логин!");
@@ -361,7 +367,6 @@
         function logout() {
             if (unsubscribeChat) unsubscribeChat();
             if (unsubscribeWall) unsubscribeWall();
-            if (unsubscribeNews) unsubscribeNews();
             auth.signOut();
             currentUser = null;
             avatarCache.clear();
@@ -379,15 +384,11 @@
                 document.getElementById('desktop-app').style.display = 'none';
                 document.getElementById('mobile-app').style.display = 'block';
                 await loadUserProfile();
-                // Показываем стену сразу
-                renderMobileWall();
-                // Фоново загружаем остальное
-                setTimeout(() => {
-                    renderMobileFriends();
-                    renderMobileMessages();
-                    renderMobileNews();
-                    renderMobileGifts();
-                }, 100);
+                await renderMobileWall();
+                renderMobileFriends();
+                renderMobileMessages();
+                renderMobileNews();
+                renderMobileGifts();
             } else {
                 document.getElementById('desktop-app').style.display = 'block';
                 document.getElementById('mobile-app').style.display = 'none';
@@ -397,7 +398,7 @@
         }
 
         // =============================================
-        // ЗАГРУЗКА ПРОФИЛЯ (БЫСТРАЯ)
+        // ЗАГРУЗКА ПРОФИЛЯ
         // =============================================
         async function loadUserProfile() {
             const doc = await db.collection('users').doc(currentUser.uid).get();
@@ -405,7 +406,6 @@
                 const data = doc.data();
                 document.getElementById('mob-profile-name').innerText = data.name || currentUser.displayName;
                 
-                // Аватарка — мгновенно из кэша или генерируем
                 let avatarUrl = avatarCache.get(currentUser.uid);
                 if (!avatarUrl) {
                     avatarUrl = data.photoURL || generateAvatar(currentUser.uid, data.name || '?');
@@ -420,7 +420,6 @@
                 if (data.coins !== undefined) infoHtml += `<div>💰 <span>${data.coins} монет</span></div>`;
                 document.getElementById('mob-profile-info').innerHTML = infoHtml;
 
-                // Магазин подарков и мои подарки
                 renderGiftStore();
                 renderMyGifts();
             }
@@ -511,8 +510,11 @@
                     text: text,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                renderMobileWall();
-                if (device === 'desktop') renderDesktopWall();
+                if (device === 'mobile') {
+                    await renderMobileWall();
+                } else {
+                    await renderDesktopWall();
+                }
             } catch (e) { alert("❌ Ошибка отправки"); }
             
             btn.innerText = original;
@@ -548,12 +550,12 @@
         }
 
         // =============================================
-        // СТЕНА (МГНОВЕННАЯ)
+        // СТЕНА
         // =============================================
         async function renderMobileWall() {
             if (unsubscribeWall) { unsubscribeWall(); unsubscribeWall = null; }
             const container = document.getElementById('mobile-wall-content');
-            container.innerHTML = `<div class="mobile-empty"><h3>⏳ Загрузка...</h3></div>`;
+            container.innerHTML = '<div class="loading">Загрузка</div>';
             
             try {
                 const snap = await db.collection('posts')
@@ -595,7 +597,7 @@
                         const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
                         const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
                         html += `<div class="mobile-post">
-                            <img src="${avatarUrl}">
+                            <img src="${avatarUrl}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
                             <div>
                                 <span class="author">${escapeHtml(p.authorName)}</span>
                                 <span class="date">${date}</span>
@@ -619,7 +621,7 @@
                 else snap.forEach(doc => {
                     const p = doc.data();
                     const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                    html += `<div class="desktop-post"><img src="${getUserAvatar(p.authorId, p.authorName)}"><div><span class="author">${escapeHtml(p.authorName)}</span><span class="date">${date}</span><div class="text">${escapeHtml(p.text)}</div></div></div>`;
+                    html += `<div class="desktop-post"><img src="${await getUserAvatar(p.authorId, p.authorName)}"><div><span class="author">${escapeHtml(p.authorName)}</span><span class="date">${date}</span><div class="text">${escapeHtml(p.text)}</div></div></div>`;
                 });
                 container.innerHTML = html;
             } catch (e) { container.innerHTML = `<div style="padding:20px;color:red;">❌ Ошибка загрузки</div>`; }
@@ -629,9 +631,8 @@
         // НОВОСТИ
         // =============================================
         async function renderMobileNews() {
-            if (unsubscribeNews) unsubscribeNews();
             const container = document.getElementById('mobile-news-content');
-            container.innerHTML = `<div class="mobile-empty"><h3>⏳ Загрузка...</h3></div>`;
+            container.innerHTML = '<div class="loading">Загрузка</div>';
             
             try {
                 const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
@@ -659,7 +660,7 @@
                         const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
                         const avatarUrl = avatarCache.get(p.authorId) || generateAvatar(p.authorId, p.authorName);
                         html += `<div class="mobile-post">
-                            <img src="${avatarUrl}">
+                            <img src="${avatarUrl}" onerror="this.src='${generateAvatar(p.authorId, p.authorName)}'">
                             <div>
                                 <span class="author">${escapeHtml(p.authorName)}</span>
                                 <span class="date">${date}</span>
@@ -690,7 +691,7 @@
                 postsSnap.forEach(doc => {
                     const p = doc.data();
                     const date = p.createdAt ? p.createdAt.toDate().toLocaleString('ru-RU') : 'Только что';
-                    html += `<div class="desktop-post"><img src="${getUserAvatar(p.authorId, p.authorName)}"><div><span class="author">${escapeHtml(p.authorName)}</span><span class="date">${date}</span><div class="text">${escapeHtml(p.text)}</div></div></div>`;
+                    html += `<div class="desktop-post"><img src="${await getUserAvatar(p.authorId, p.authorName)}"><div><span class="author">${escapeHtml(p.authorName)}</span><span class="date">${date}</span><div class="text">${escapeHtml(p.text)}</div></div></div>`;
                 });
                 container.innerHTML = html || `<div style="padding:20px;color:#777;">📭 У друзей пока нет постов</div>`;
             } catch (e) { container.innerHTML = `<div style="padding:20px;color:red;">❌ Ошибка</div>`; }
@@ -716,7 +717,7 @@
                     if (u.name.toLowerCase().includes(query) && doc.id !== currentUser.uid) {
                         const isFriend = myFriends.has(doc.id);
                         const btn = isFriend ? `<span style="color:#777;">✅ В друзьях</span>` : `<button class="add-btn" onclick="addFriend('${doc.id}', '${escapeHtml(u.name)}')">➕ Добавить</button>`;
-                        html += `<div class="friend-item"><div class="friend-info"><img src="${getUserAvatar(doc.id, u.name)}"><div><b>${escapeHtml(u.name)}</b></div></div>${btn}</div>`;
+                        html += `<div class="friend-item"><div class="friend-info"><img src="${await getUserAvatar(doc.id, u.name)}"><div><b>${escapeHtml(u.name)}</b></div></div>${btn}</div>`;
                     }
                 });
                 document.getElementById(device === 'desktop' ? 'desk-search-results' : 'mobile-friends-list').innerHTML = html || `<div style="padding:10px;color:#777;">🔍 Ничего не найдено</div>`;
@@ -744,7 +745,7 @@
                 else snap.forEach(doc => {
                     const f = doc.data();
                     const friendId = f.friendId;
-                    html += `<div class="friend-item" onclick="openChat('${friendId}')"><div class="friend-info"><img src="${getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
+                    html += `<div class="friend-item" onclick="openChat('${friendId}')"><div class="friend-info"><img src="${await getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
                 });
                 container.innerHTML = html;
             } catch (e) {}
@@ -759,7 +760,7 @@
                 else snap.forEach(doc => {
                     const f = doc.data();
                     const friendId = f.friendId;
-                    html += `<div class="friend-item" onclick="openChat('${friendId}')" style="cursor:pointer;"><div class="friend-info"><img src="${getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
+                    html += `<div class="friend-item" onclick="openChat('${friendId}')" style="cursor:pointer;"><div class="friend-info"><img src="${await getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
                 });
                 container.innerHTML = html;
             } catch (e) {}
@@ -835,7 +836,7 @@
                 else snap.forEach(doc => {
                     const f = doc.data();
                     const friendId = f.friendId;
-                    html += `<div class="chat-item" onclick="openChat('${friendId}')"><div class="friend-info"><img src="${getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
+                    html += `<div class="chat-item" onclick="openChat('${friendId}')"><div class="friend-info"><img src="${await getUserAvatar(friendId, f.friendName)}"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div></div>`;
                 });
                 container.innerHTML = html;
             } catch (e) {}
@@ -850,14 +851,14 @@
                 else snap.forEach(doc => {
                     const f = doc.data();
                     const friendId = f.friendId;
-                    html += `<div class="chat-item" onclick="openChat('${friendId}')" style="cursor:pointer;padding:10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ddd;"><img src="${getUserAvatar(friendId, f.friendName)}" style="width:40px;height:40px;border-radius:50%;"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div>`;
+                    html += `<div class="chat-item" onclick="openChat('${friendId}')" style="cursor:pointer;padding:10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #ddd;"><img src="${await getUserAvatar(friendId, f.friendName)}" style="width:40px;height:40px;border-radius:50%;"><div><b>${escapeHtml(f.friendName || 'Друг')}</b></div></div>`;
                 });
                 container.innerHTML = html;
             } catch (e) {}
         }
 
         // =============================================
-        // ПОДАРКИ (РАБОТАЮТ БЕЗ КАРТИНОК)
+        // ПОДАРКИ
         // =============================================
         function renderGiftStore() {
             const container = document.getElementById('mob-profile-info');
@@ -886,14 +887,8 @@
             if (!gift) return alert("❌ Подарок не найден!");
             if (userData.coins < gift.price) return alert(`❌ Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
 
-            const friendNames = [];
-            const friendSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-            friendSnap.forEach(doc => friendNames.push(doc.data().friendName));
-            if (!friendNames.length) return alert("❌ У вас нет друзей!");
-
-            const recipientName = prompt(`🎁 Кому подарить ${gift.name}?\nДрузья: ${friendNames.join(', ')}`);
+            const recipientName = prompt(`🎁 Кому подарить ${gift.name}? (Введите имя)`);
             if (!recipientName) return;
-            if (!friendNames.includes(recipientName)) return alert("❌ Этот пользователь не у вас в друзьях!");
 
             const snap = await db.collection('users').where('name', '==', recipientName).get();
             if (snap.empty) return alert("❌ Пользователь не найден!");
@@ -972,6 +967,7 @@
         async function renderMobileGifts() {
             const container = document.getElementById('mobile-gifts-content');
             if (!container) return;
+            container.innerHTML = '<div class="loading">Загрузка</div>';
             
             try {
                 const giftsSnap = await db.collection('gifts')
@@ -1044,6 +1040,7 @@
         async function renderDesktopGifts() {
             const container = document.getElementById('desk-gifts-content');
             if (!container) return;
+            container.innerHTML = '<div class="loading">Загрузка</div>';
             await renderMobileGifts();
         }
 
@@ -1053,7 +1050,6 @@
         function switchMobTab(tab) {
             if (unsubscribeChat) unsubscribeChat();
             if (unsubscribeWall) unsubscribeWall();
-            if (unsubscribeNews) unsubscribeNews();
             
             document.querySelectorAll('.mobile-view-container').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.mobile-tab-btn').forEach(el => el.classList.remove('active'));
@@ -1089,7 +1085,7 @@
         auth.onAuthStateChanged(user => {
             if (user && !currentUser) {
                 currentUser = user;
-                enterApp();
+                setTimeout(enterApp, 500);
             }
         });
     </script>
