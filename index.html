@@ -260,7 +260,7 @@
         const avatarCache = new Map();
 
         // =============================================
-        // АВТОРИЗАЦИЯ (ПРОСТАЯ И РАБОЧАЯ)
+        // АВТОРИЗАЦИЯ
         // =============================================
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
@@ -301,14 +301,26 @@
                 } 
                 
                 // ВХОД
-                // 1. Ищем пользователя по имени в базе
+                // 1. Сначала пробуем войти как по Email (вдруг человек ввел полный Email)
+                if (name.includes('@')) {
+                    try {
+                        const cred = await auth.signInWithEmailAndPassword(name, pass);
+                        currentUser = auth.currentUser;
+                        enterApp();
+                        return;
+                    } catch (e) {
+                        if (e.code !== 'auth/user-not-found') throw e;
+                    }
+                }
+
+                // 2. Если не получилось, ищем пользователя по имени в базе
                 const snap = await db.collection('users').where('name', '==', name).get();
                 if (snap.empty) return showAuthError("Такой пользователь не найден!");
                 
                 const userData = snap.docs[0].data();
                 const foundEmail = userData.email;
                 
-                // 2. Входим по сохраненному email
+                // 3. Входим по сохраненному email
                 const cred = await auth.signInWithEmailAndPassword(foundEmail, pass);
                 currentUser = auth.currentUser;
                 enterApp();
@@ -339,7 +351,7 @@
         }
 
         // =============================================
-        // ВХОД
+        // ВХОД В ПРИЛОЖЕНИЕ
         // =============================================
         async function enterApp() {
             document.getElementById('auth-screen').style.display = 'none';
@@ -593,7 +605,7 @@
         }
 
         // =============================================
-        // ДРУЗЬЯ И ЧАТЫ
+        // ДРУЗЬЯ
         // =============================================
         async function searchUsers(device) {
             const inputId = device === 'desktop' ? 'desk-search-input' : 'mob-search-input';
@@ -658,6 +670,9 @@
             } catch (e) {}
         }
 
+        // =============================================
+        // ЧАТЫ
+        // =============================================
         async function openChat(friendId) {
             document.getElementById('chat-messages-box').innerHTML = '<div style="padding:10px;color:#777;text-align:center;">Загрузка чата...</div>';
             document.getElementById('chat-interface').style.display = 'flex';
