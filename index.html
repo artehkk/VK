@@ -18,7 +18,6 @@
         ul { list-style: none; }
         #auth-error { color: red; font-size: 12px; margin-bottom: 10px; display: none; }
 
-        /* ===== ЭКРАН ВХОДА ===== */
         #auth-screen { display: flex; flex-direction: column; justify-content: flex-start; height: 100vh; background: #ffffff; }
         .auth-header-bar { background: #C9D1D8; height: 44px; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid #b0b9c0; }
         .auth-header-bar svg { height: 24px; width: auto; fill: #fff; }
@@ -32,14 +31,12 @@
         .auth-signup-area { margin-top: 15px; padding-top: 10px; border-top: 1px solid #E5E9ED; }
         .auth-signup-area button { width: 100%; background: #E5E9ED; color: #45688E; border: 1px solid #C5D0DB; padding: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
-        /* ===== ДЕСКТОП ===== */
         .desktop-view { display: none; }
         .desktop-header { background: linear-gradient(to bottom, #6A96C4, #4B739B); height: 32px; border-bottom: 1px solid #2F5882; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 12px; font-weight: bold; }
         .desktop-layout { display: grid; grid-template-columns: 200px 1fr; max-width: 980px; margin: 15px auto; gap: 15px; }
         .desktop-sidebar a { display: block; padding: 3px 0; }
         .desktop-content { background: #fff; border: 1px solid #C5D0DB; }
 
-        /* ===== МОБИЛЬНЫЙ ===== */
         .mobile-view { display: none; padding-bottom: 50px; background: #F2F2F2; min-height: 100vh; }
         .mobile-header { background-image: linear-gradient(to bottom, #5E83A9, #3A6087); height: 44px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; color: white; font-weight: bold; font-size: 18px; padding: 0 10px; text-shadow: 0 1px 0 rgba(0,0,0,0.3); transition: background-image 0.1s ease; }
         .mobile-header:active { background-image: linear-gradient(to bottom, #3A6087, #5E83A9); }
@@ -53,7 +50,6 @@
         .mobile-view-container.active { display: block; }
         .mobile-empty { padding: 40px 20px; text-align: center; color: #666; }
         
-        /* ===== ПРОФИЛЬ И ПОСТЫ ===== */
         .mobile-profile-header { background: #fff; padding: 15px; border-bottom: 1px solid #ddd; display: flex; gap: 15px; align-items: center; cursor: pointer; }
         .mobile-profile-header:active { background: #f0f0f0; }
         .mobile-profile-avatar { width: 80px; height: 80px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
@@ -73,7 +69,6 @@
         .post-image-container { margin-top: 8px; width: 100%; max-width: 300px; border-radius: 2px; overflow: hidden; border: 1px solid #eee; }
         .post-image-container img { width: 100%; height: auto; display: block; object-fit: cover; }
         
-        /* ===== ЛАЙКИ, КОММЕНТЫ, РЕПОСТЫ ===== */
         .post-actions { display: flex; gap: 15px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #eee; font-size: 13px; color: #2B587A; }
         .post-actions span { cursor: pointer; display: flex; align-items: center; gap: 4px; }
         .post-actions span:active { opacity: 0.6; }
@@ -97,6 +92,16 @@
         .return-btn { background: #f0ad4e; color: white; border: none; padding: 2px 6px; border-radius: 2px; font-size: 10px; cursor: pointer; margin-top: 3px; width: 100%; }
         .return-btn:hover { background: #ec971f; }
         .gifts-store-window { background: white; border: 1px solid #eee; padding: 15px; margin: 10px 0; border-radius: 2px; }
+
+        /* ВЫБОР ДРУГА ДЛЯ ПОДАРКА (НОВОЕ) */
+        #gift-friend-selector { display: none; position: fixed; bottom: 0; left: 0; width: 100%; max-height: 50vh; background: #fff; z-index: 9999; border-top-left-radius: 12px; border-top-right-radius: 12px; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); padding: 20px; flex-direction: column; overflow-y: auto; }
+        #gift-friend-selector h3 { font-size: 16px; margin-bottom: 10px; text-align: center; color: #2B587A; }
+        .selector-close { align-self: flex-end; cursor: pointer; font-size: 20px; color: #999; margin-bottom: -10px; }
+        .friend-select-list { display: flex; flex-direction: column; gap: 8px; }
+        .friend-select-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .friend-select-item:active { background: #f5f5f5; }
+        .friend-select-item img { width: 40px; height: 40px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
+        .friend-select-item span { font-weight: bold; color: #2B587A; font-size: 15px; }
 
         /* ===== ПРОФИЛЬ ДРУГОГО ПОЛЬЗОВАТЕЛЯ ===== */
         #user-profile-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F2F2F2; z-index: 9998; flex-direction: column; }
@@ -273,7 +278,14 @@
         </nav>
     </div>
 
-    <!-- ПРОСМОТР ПРОФИЛЯ (всплывающее окно) -->
+    <!-- ВЫБОР ДРУГА ДЛЯ ПОДАРКА -->
+    <div id="gift-friend-selector">
+        <div class="selector-close" onclick="closeGiftSelector()">✕</div>
+        <h3>🎁 Кому подарить?</h3>
+        <div class="friend-select-list" id="friend-select-list"></div>
+    </div>
+
+    <!-- ПРОСМОТР ПРОФИЛЯ -->
     <div id="user-profile-view">
         <div class="user-profile-header">
             <div class="back-btn" onclick="closeUserProfile()">←</div>
@@ -320,6 +332,7 @@
         let currentUser = null;
         let currentChatPartnerId = null;
         let currentChatPartnerName = null;
+        let pendingGiftId = null;
         let unsubscribeChat = null;
         let unsubscribeWall = null;
         let unsubscribeNews = null;
@@ -457,7 +470,6 @@
             }
         }
 
-        // --- АВАТАРКА ---
         async function uploadAvatar() {
             const file = document.getElementById('avatar-upload').files[0];
             if (!file) return;
@@ -479,7 +491,6 @@
             document.getElementById('avatar-upload').value = '';
         }
 
-        // --- ПРОФИЛЬ И ПОСТЫ ---
         function toggleEditProfile() {
             const form = document.getElementById('mob-edit-form');
             form.style.display = form.style.display === 'none' ? 'flex' : 'none';
@@ -586,7 +597,6 @@
                         }
                     }
                     container.innerHTML = html;
-                    // Загружаем лайки и комментарии
                     for (const doc of snapshot.docs) {
                         await loadLikesAndComments(doc.id);
                     }
@@ -1062,7 +1072,7 @@
             const container = document.getElementById('mob-gifts-content');
             let storeHtml = `<div class="gifts-store-window"><h3>🎁 Магазин подарков</h3><div class="gift-grid">`;
             GIFTS.forEach(g => {
-                storeHtml += `<div class="gift-item" onclick="buyGift('${g.id}')">
+                storeHtml += `<div class="gift-item" onclick="startGiftSelection('${g.id}')">
                     <img src="gifts/${g.id}.png" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2225%22 y=%2230%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%23999%22%3E${g.id}%3C/text%3E%3C/svg%3E'" />
                     <span class="gift-name">${g.name}</span>
                     <span class="gift-price">${g.price} монет</span>
@@ -1096,22 +1106,49 @@
             container.innerHTML = document.getElementById('mob-gifts-content').innerHTML;
         }
 
-        async function buyGift(giftId) {
+        // Новая логика выбора друга
+        function startGiftSelection(giftId) {
+            pendingGiftId = giftId;
+            document.getElementById('gift-friend-selector').style.display = 'flex';
+            loadFriendSelector();
+        }
+
+        async function loadFriendSelector() {
+            const list = document.getElementById('friend-select-list');
+            list.innerHTML = '<div style="padding:10px;color:#777;">Загрузка друзей...</div>';
+            const snap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
+            if (snap.empty) {
+                list.innerHTML = '<div style="padding:10px;color:#777;">У вас нет друзей</div>';
+                return;
+            }
+            let html = '';
+            for (const doc of snap.docs) {
+                const f = doc.data();
+                const avatar = await getUserAvatar(f.friendId, f.friendName);
+                html += `
+                    <div class="friend-select-item" onclick="confirmGift('${f.friendId}', '${escapeHtml(f.friendName)}')">
+                        <img src="${avatar}">
+                        <span>${escapeHtml(f.friendName)}</span>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
+        function closeGiftSelector() {
+            document.getElementById('gift-friend-selector').style.display = 'none';
+            pendingGiftId = null;
+        }
+
+        async function confirmGift(recipientId, recipientName) {
+            if (!pendingGiftId) return;
+            const giftId = pendingGiftId;
+            closeGiftSelector();
             const userData = (await db.collection('users').doc(currentUser.uid).get()).data();
             if (!userData) return;
             const gift = GIFTS.find(g => g.id === giftId);
             if (!gift) return alert("Подарок не найден!");
             if (userData.coins < gift.price) return alert(`Не хватает монет! Нужно ${gift.price}, у вас ${userData.coins}`);
-            const friendNames = [];
-            const friendSnap = await db.collection('friends').where('userId', '==', currentUser.uid).get();
-            friendSnap.forEach(doc => friendNames.push(doc.data().friendName));
-            if (!friendNames.length) return alert("У вас нет друзей, чтобы дарить подарки!");
-            const recipientName = prompt(`Кому подарить ${gift.name}?\nДрузья: ${friendNames.join(', ')}`);
-            if (!recipientName) return;
-            if (!friendNames.includes(recipientName)) return alert("Этот пользователь не у вас в друзьях!");
-            const snap = await db.collection('users').where('name', '==', recipientName).get();
-            if (snap.empty) return alert("Пользователь не найден!");
-            const recipientId = snap.docs[0].id;
             await db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-gift.price) });
             await db.collection('gifts').add({
                 fromId: currentUser.uid, fromName: currentUser.displayName,
@@ -1119,7 +1156,7 @@
                 giftId: giftId, createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             alert(`🎁 ${gift.name} успешно подарен ${recipientName}!`);
-            loadUserProfile();
+            renderUI(window.innerWidth > 768 ? 'desktop' : 'mobile');
         }
 
         async function returnCoins(giftDocId, fromId) {
@@ -1135,7 +1172,7 @@
             await db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-gift.price) });
             await docRef.update({ returned: true });
             alert(`✅ Монеты (${gift.price}) возвращены. Подарок остался у вас.`);
-            loadUserProfile();
+            renderUI(window.innerWidth > 768 ? 'desktop' : 'mobile');
         }
 
         function playNotificationSound() {
