@@ -18,13 +18,84 @@
         ul { list-style: none; }
         #auth-error { color: red; font-size: 12px; margin-bottom: 10px; display: none; }
 
-        #auth-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background: #DCE1E7; }
-        .auth-box { background: white; padding: 30px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
-        .auth-box h2 { color: #2B587A; margin-bottom: 20px; }
-        .auth-box input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
-        .auth-box button { width: 100%; padding: 12px; background: #5E83A9; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .auth-toggle { margin-top: 15px; font-size: 14px; color: #2B587A; cursor: pointer; }
+        /* ============================================================
+           ЭКРАН ВХОДА (В ТОЧНОСТИ КАК НА СКРИНШОТЕ)
+           ============================================================ */
+        #auth-screen {
+            display: flex; flex-direction: column; justify-content: flex-start;
+            height: 100vh; background: #ffffff;
+        }
+        
+        /* Верхняя серая полоска */
+        .auth-header-bar {
+            background: #C9D1D8; /* Тот самый серо-голубой цвет шапки */
+            height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-bottom: 1px solid #b0b9c0;
+        }
+        .auth-header-bar svg {
+            height: 24px; width: auto;
+            fill: #fff;
+        }
 
+        /* Основной контент входа */
+        .auth-content {
+            padding: 15px 15px 0 15px;
+            display: flex; flex-direction: column;
+        }
+        .auth-intro {
+            font-size: 13px; color: #333; margin-bottom: 15px; line-height: 1.4;
+        }
+
+        /* Стили полей ввода (как на старом скрине) */
+        .auth-row {
+            margin-bottom: 12px;
+        }
+        .auth-row label {
+            display: block; font-size: 13px; color: #2B587A; margin-bottom: 4px;
+        }
+        .auth-row input {
+            width: 100%; padding: 6px 8px; border: 1px solid #9BAAB8;
+            border-radius: 2px; font-size: 14px; background: #fff;
+        }
+        .auth-row input:focus {
+            outline: 1px solid #2B587A; border-color: #2B587A;
+        }
+
+        /* Кнопки входа */
+        .auth-actions {
+            display: flex; align-items: center; gap: 15px; margin-top: 5px;
+        }
+        .auth-actions button {
+            background: #4D729A; color: white; border: 1px solid #36587C;
+            padding: 6px 18px; font-size: 13px; font-weight: bold; cursor: pointer;
+            border-radius: 2px;
+        }
+        .auth-actions button:active { background: #36587C; }
+        .auth-actions .forgot-link {
+            font-size: 13px; color: #2B587A; text-decoration: none;
+        }
+
+        /* Ссылка на регистрацию */
+        .auth-signup-area {
+            margin-top: 15px; padding-top: 10px; border-top: 1px solid #E5E9ED;
+        }
+        .auth-signup-area button {
+            width: 100%; background: #E5E9ED; color: #45688E;
+            border: 1px solid #C5D0DB; padding: 8px; font-size: 14px;
+            font-weight: bold; cursor: pointer;
+        }
+        .auth-signup-area button:active { background: #d4dce3; }
+
+        .auth-toggle {
+            display: none; /* Скрываем переключатель, так как дизайн подразумевает раздельные кнопки */
+        }
+
+        /* ============================================================
+           ОБЩИЕ СТИЛИ ИНТЕРФЕЙСА (КВАДРАТНЫЕ АВАТАРКИ)
+           ============================================================ */
         .desktop-view { display: none; }
         .desktop-header { background: linear-gradient(to bottom, #6A96C4, #4B739B); height: 32px; border-bottom: 1px solid #2F5882; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 12px; font-weight: bold; }
         .desktop-layout { display: grid; grid-template-columns: 200px 1fr; max-width: 980px; margin: 15px auto; gap: 15px; }
@@ -35,28 +106,27 @@
         .desktop-create-post textarea { width: 100%; height: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 2px; resize: vertical; max-height: 150px; font-family: inherit; }
         .desktop-create-post button { align-self: flex-end; background: #537B9B; color: white; border: 1px solid #3F6484; padding: 5px 15px; border-radius: 2px; cursor: pointer; }
 
-        .desktop-post, .mobile-post { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; gap: 10px; }
-        .desktop-post img { width: 55px; height: 55px; border-radius: 50%; border: 1px solid #C5D0DB; object-fit: cover; }
+        /* КВАДРАТНЫЕ АВАТАРКИ (скругление 2px) */
+        .desktop-post img, .mobile-post img, 
+        .mobile-profile-avatar, .desktop-avatar,
+        .friend-info img, .chat-item img {
+            border-radius: 2px !important;
+            border: 1px solid #C5D0DB;
+        }
+        .desktop-post img { width: 55px; height: 55px; object-fit: cover; }
         .desktop-post .author, .mobile-post .author { font-weight: bold; color: #2B587A; font-size: 15px; display: block; }
         .desktop-post .date, .mobile-post .date { color: #999; font-size: 11px; margin-top: 2px; display: block; }
         .desktop-post .text, .mobile-post .text { margin-top: 5px; line-height: 1.4; font-size: 14px; color: #333; white-space: pre-wrap; word-break: break-word; }
-        .post-image-container { margin-top: 8px; width: 100%; max-width: 300px; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
+        .post-image-container { margin-top: 8px; width: 100%; max-width: 300px; border-radius: 2px; overflow: hidden; border: 1px solid #eee; }
         .post-image-container img { width: 100%; height: auto; display: block; object-fit: cover; }
 
         .mobile-view { display: none; padding-bottom: 50px; background: #F2F2F2; min-height: 100vh; }
         .mobile-header { background-image: linear-gradient(to bottom, #5E83A9, #3A6087); height: 44px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; color: white; font-weight: bold; font-size: 18px; padding: 0 10px; text-shadow: 0 1px 0 rgba(0,0,0,0.3); transition: background-image 0.1s ease; }
-        
-        /* Эффект при нажатии на шапку (цвета градиента меняются местами) */
-        .mobile-header:active {
-            background-image: linear-gradient(to bottom, #3A6087, #5E83A9);
-        }
-        
+        .mobile-header:active { background-image: linear-gradient(to bottom, #3A6087, #5E83A9); }
         .mobile-header .logout-btn { position: absolute; right: 10px; top: 12px; color: #dbeaff; font-size: 13px; font-weight: normal; }
         .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: #2E2E2E; background-image: linear-gradient(to bottom, #444, #222); display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #111; z-index: 999; }
         .mobile-tab-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; color: #999; font-size: 10px; text-transform: uppercase; border: none; background: transparent; cursor: pointer; }
         .mobile-tab-btn.active { color: #F2F2F2; background: rgba(255,255,255,0.05); }
-        
-        /* Обновленный стиль для SVG иконок */
         .tab-icon { width: 24px; height: 24px; margin-bottom: 2px; }
         .mobile-tab-btn.active .tab-icon { fill: #5E83A9; }
         
@@ -65,40 +135,40 @@
         .mobile-empty { padding: 40px 20px; text-align: center; color: #666; }
         
         .mobile-profile-header { background: #fff; padding: 15px; border-bottom: 1px solid #ddd; display: flex; gap: 15px; align-items: center; }
-        .mobile-profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #ddd; object-fit: cover; }
+        .mobile-profile-avatar { width: 80px; height: 80px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
         .mobile-profile-name { font-size: 18px; font-weight: bold; color: #000; }
         .mobile-create-post { background: #fff; padding: 10px; border-bottom: 1px solid #eee; display: flex; gap: 8px; align-items: center; }
-        .mobile-create-post textarea { flex: 1; border: 1px solid #ccc; border-radius: 5px; padding: 5px; height: 40px; resize: none; max-height: 150px; font-family: inherit; font-size: 14px; background: #F9F9F9; }
+        .mobile-create-post textarea { flex: 1; border: 1px solid #ccc; border-radius: 2px; padding: 5px; height: 40px; resize: none; max-height: 150px; font-family: inherit; font-size: 14px; background: #F9F9F9; }
         .mobile-create-post .file-label { cursor: pointer; font-size: 20px; padding: 0 10px; }
         .mobile-create-post .file-label input { display: none; }
-        .mobile-create-post button { background: #5E83A9; color: white; border: 1px solid #3A6087; padding: 0 15px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; height: 40px; }
+        .mobile-create-post button { background: #5E83A9; color: white; border: 1px solid #3A6087; padding: 0 15px; border-radius: 2px; font-size: 14px; font-weight: bold; cursor: pointer; height: 40px; }
         
-        .mobile-post img { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; }
+        .mobile-post img { width: 40px; height: 40px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
         .friend-item, .chat-item { background: #fff; border-bottom: 1px solid #eee; padding: 12px 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .friend-item:hover, .chat-item:hover { background: #f4f6f8; }
         .friend-info { display: flex; gap: 10px; align-items: center; }
-        .friend-info img { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; }
-        .add-btn { color: #fff; background: #5E83A9; padding: 4px 12px; border-radius: 3px; font-size: 12px; border: 1px solid #3F6484; cursor: pointer; }
+        .friend-info img, .chat-item img { width: 45px; height: 45px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
+        .add-btn { color: #fff; background: #5E83A9; padding: 4px 12px; border-radius: 2px; font-size: 12px; border: 1px solid #3F6484; cursor: pointer; }
         
         #chat-interface { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F2F2F2; z-index: 9999; flex-direction: column; }
         .chat-header { background: #5E83A9; color: white; padding: 12px; display: flex; align-items: center; gap: 15px; min-height: 44px; }
         .chat-header .back-btn { font-size: 20px; cursor: pointer; }
         .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; background: #f2f2f2;}
-        .msg-bubble { max-width: 70%; padding: 8px 12px; border-radius: 8px; font-size: 14px; background: #fff; align-self: flex-start; border: 1px solid #ddd; word-break: break-word; }
+        .msg-bubble { max-width: 70%; padding: 8px 12px; border-radius: 2px; font-size: 14px; background: #fff; align-self: flex-start; border: 1px solid #ddd; word-break: break-word; }
         .msg-bubble.my-msg { background: #DCF8C6; align-self: flex-end; border: 1px solid #98D67B; }
         .chat-input-area { background: #fff; padding: 10px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
-        .chat-input-area input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 20px; font-size: 14px; }
-        .chat-input-area button { background: #5E83A9; color: white; border: none; padding: 0 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .chat-input-area input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 2px; font-size: 14px; }
+        .chat-input-area button { background: #5E83A9; color: white; border: none; padding: 0 20px; border-radius: 2px; font-weight: bold; cursor: pointer; }
 
-        .edit-btn { background: #e0e0e0; color: #333; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 10px; }
+        .edit-btn { background: #e0e0e0; color: #333; border: none; padding: 4px 12px; border-radius: 2px; font-size: 12px; cursor: pointer; margin-left: 10px; }
         .edit-btn:hover { background: #ccc; }
         .profile-info-block { margin-top: 5px; font-size: 13px; color: #333; display: flex; flex-direction: column; gap: 2px; }
         .profile-info-block span { color: #777; font-weight: normal; }
-        .edit-form { background: #F9F9F9; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; display: none; flex-direction: column; gap: 8px; }
-        .edit-form input, .edit-form textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit; font-size: 13px; }
-        .edit-form button { background: #5E83A9; color: white; border: none; padding: 6px 15px; border-radius: 3px; cursor: pointer; }
+        .edit-form { background: #F9F9F9; padding: 10px; border: 1px solid #ddd; border-radius: 2px; margin-top: 10px; display: none; flex-direction: column; gap: 8px; }
+        .edit-form input, .edit-form textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 2px; font-family: inherit; font-size: 13px; }
+        .edit-form button { background: #5E83A9; color: white; border: none; padding: 6px 15px; border-radius: 2px; cursor: pointer; }
         .edit-form button:hover { background: #4A739E; }
-        .delete-wall-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .delete-wall-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 2px; cursor: pointer; margin-top: 15px; font-weight: bold; }
         .delete-wall-btn:hover { background: #c9302c; }
 
         #offline-banner { display: none; background: #d9534f; color: white; text-align: center; padding: 5px; font-size: 12px; position: sticky; top: 44px; z-index: 101; }
@@ -111,22 +181,52 @@
 
     <div id="offline-banner">⚠️ Нет соединения с интернетом. Проверьте подключение.</div>
 
-    <!-- ЭКРАН ВХОДА -->
+    <!-- =============================================
+         ЭКРАН ВХОДА (НОВЫЙ ДИЗАЙН)
+         ============================================= -->
     <div id="auth-screen">
-        <div class="auth-box">
-            <h2 id="auth-title">Вход</h2>
-            <div id="auth-error"></div>
-            <input type="text" id="auth-name" placeholder="Имя пользователя">
-            <input type="password" id="auth-pass" placeholder="Пароль">
-            <button onclick="handleAuth()" id="auth-btn">Войти</button>
-            <div class="auth-toggle" onclick="toggleAuthMode()">Нет аккаунта? Зарегистрироваться</div>
+        <!-- Серая шапка входа -->
+        <div class="auth-header-bar">
+            <!-- Логотип VK (SVG) -->
+            <svg viewBox="0 0 24 24">
+                <path d="M21.6 8.5c.3-.9.6-1.4-1.2-1.4h-2.9c-.9 0-1.3.5-1.5 1.2L14.5 13l-1.7-4.9c-.2-.6-.6-1-1.4-1H8.8c-.9 0-1.2.5-1.2.9 0 1.2 2.4 7.6 2.4 7.6s-1.6 2.3-1.8 2.5c-.2.2-.3.5-.3.8 0 .4.1.8.8.8h2.9v4.1c0 .5.2.7.8.7h2.5c.5 0 .8-.3.8-.8v-5.5c0-.8.4-1 1.2-1h1.4c1.2 0 1.4-.6 1.6-1.3l2.1-5.9z"/>
+            </svg>
+        </div>
+
+        <div class="auth-content">
+            <div class="auth-intro">
+                Our mobile version lets you stay in touch even when you're far from your computer.
+            </div>
+
+            <div class="auth-row">
+                <label>Phone or email:</label>
+                <input type="text" id="auth-name" placeholder="">
+            </div>
+
+            <div class="auth-row">
+                <label>Password:</label>
+                <input type="password" id="auth-pass" placeholder="">
+            </div>
+
+            <div id="auth-error" style="color:red; font-size:12px; margin-bottom:10px; display:none;"></div>
+
+            <div class="auth-actions">
+                <button onclick="handleAuth()" id="auth-btn">Log in</button>
+                <a href="#" class="forgot-link" onclick="alert('Восстановление пока не работает в демо')">Forgot your password?</a>
+            </div>
+
+            <div class="auth-signup-area">
+                <button onclick="toggleAuthMode()">Sign up for VK</button>
+            </div>
         </div>
     </div>
 
-    <!-- ДЕСКТОП -->
+    <!-- =============================================
+         ОСНОВНОЙ САЙТ (ДЕСКТОП)
+         ============================================= -->
     <div id="desktop-app" class="desktop-view">
         <div class="desktop-header">
-            <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:3px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#">главная</a> <a href="#">поиск</a></div>
+            <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:2px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#">главная</a> <a href="#">поиск</a></div>
             <div><a href="#" class="logout-btn" onclick="logout()">выйти</a></div>
         </div>
         <div class="desktop-layout">
@@ -156,7 +256,9 @@
         </div>
     </div>
 
-    <!-- МОБИЛЬНЫЙ -->
+    <!-- =============================================
+         ОСНОВНОЙ САЙТ (МОБИЛЬНЫЙ)
+         ============================================= -->
     <div id="mobile-app" class="mobile-view">
         <div class="mobile-header">
             <span id="mob-header-title">Новости</span>
@@ -215,7 +317,7 @@
         <div id="mob-friends" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;">
                 <h3 style="font-size:15px; color:#000;">Друзья</h3>
-                <input type="text" id="mob-search-input" placeholder="Поиск людей" style="width:100%; padding:6px; border:1px solid #ccc; margin-top:5px; border-radius:4px;" oninput="searchUsers('mobile')">
+                <input type="text" id="mob-search-input" placeholder="Поиск людей" style="width:100%; padding:6px; border:1px solid #ccc; margin-top:5px; border-radius:2px;" oninput="searchUsers('mobile')">
             </div>
             <div id="mobile-friends-list"></div>
         </div>
@@ -298,11 +400,21 @@
         // =============================================
         // АВТОРИЗАЦИЯ
         // =============================================
+        /* Обрати внимание: регистрация теперь переключается через кнопку внизу, 
+           а не через текстовую ссылку. Логика в handleAuth() использует переменную isRegisterMode. */
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
-            document.getElementById('auth-title').innerText = isRegisterMode ? 'Регистрация' : 'Вход';
-            document.getElementById('auth-btn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
-            document.getElementById('auth-error').style.display = 'none';
+            const btn = document.getElementById('auth-btn');
+            const title = document.querySelector('.auth-content h2');
+            
+            // Меняем текст на кнопке Log in
+            if (isRegisterMode) {
+                btn.innerText = "Sign up";
+                document.querySelector('.auth-intro').innerText = "Create a new account to join VK.";
+            } else {
+                btn.innerText = "Log in";
+                document.querySelector('.auth-intro').innerText = "Our mobile version lets you stay in touch even when you're far from your computer.";
+            }
         }
 
         async function handleAuth() {
@@ -505,7 +617,6 @@
             try {
                 let imageURL = null;
                 
-                // Загружаем фото, если оно есть
                 if (file) {
                     const storageRef = storage.ref(`post_images/${Date.now()}_${currentUser.uid}`);
                     await storageRef.put(file);
