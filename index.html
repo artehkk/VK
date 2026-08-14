@@ -32,7 +32,34 @@
         .auth-signup-area button { width: 100%; background: #E5E9ED; color: #45688E; border: 1px solid #C5D0DB; padding: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
         .desktop-view { display: none; }
-        .desktop-header { background: linear-gradient(to bottom, #6A96C4, #4B739B); height: 32px; border-bottom: 1px solid #2F5882; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; color: white; font-size: 12px; font-weight: bold; }
+        
+        /* ===== НОВАЯ ДЕСКТОПНАЯ ШАПКА (ЛЕГЕНДАРНЫЙ ЛОГОТИП) ===== */
+        .desktop-header { 
+            background: linear-gradient(to bottom, #6A96C4, #4B739B); 
+            height: 32px; 
+            border-bottom: 1px solid #2F5882; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 15px; 
+            color: white; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        .logo-svg {
+            height: 24px;
+            display: block;
+        }
+        .desktop-header .right-links a {
+            color: #dbeaff;
+            margin-left: 15px;
+            font-weight: normal;
+            font-size: 11px;
+        }
+        .desktop-header .right-links a:hover {
+            color: white;
+        }
+
         .desktop-layout { display: grid; grid-template-columns: 200px 1fr; max-width: 980px; margin: 15px auto; gap: 15px; }
         .desktop-sidebar a { display: block; padding: 3px 0; }
         .desktop-content { background: #fff; border: 1px solid #C5D0DB; }
@@ -119,8 +146,35 @@
     <!-- ДЕСКТОП -->
     <div id="desktop-app" class="desktop-view">
         <div class="desktop-header">
-            <div><b><span style="background:#fff;color:#2B587A;padding:0 4px;border-radius:2px;">B</span> КОНТАКТЕ</b> &nbsp;|&nbsp; <a href="#">главная</a> <a href="#">поиск</a></div>
-            <div><a href="#" class="logout-btn" onclick="logout()">выйти</a></div>
+            <div>
+                <!-- ЛЕГЕНДАРНЫЙ ЛОГОТИП ЧЕРЕЗ SVG -->
+                <svg class="logo-svg" viewBox="0 0 400 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Тень и объем буквы B -->
+                    <defs>
+                        <linearGradient id="bGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#d0dbe5;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#b0c7da;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Прямоугольник под букву B -->
+                    <rect x="10" y="10" width="32" height="38" rx="4" fill="url(#bGrad)" stroke="#6d7e8e" stroke-width="1.5"/>
+                    <!-- Буква B -->
+                    <text x="26" y="38" fill="#2B587A" font-family="Arial, sans-serif" font-weight="900" font-size="32" text-anchor="middle">B</text>
+                    
+                    <!-- Текст "КОНТАКТЕ" -->
+                    <text x="48" y="40" fill="url(#textGrad)" font-family="Arial, sans-serif" font-weight="900" font-size="22" letter-spacing="0.5">КОНТАКТЕ</text>
+                </svg>
+            </div>
+            <div class="right-links">
+                <a href="#">главная</a>
+                <a href="#">поиск</a>
+                <a href="#" class="logout-btn" onclick="logout()">выйти</a>
+            </div>
         </div>
         <div class="desktop-layout">
             <aside class="desktop-sidebar">
@@ -246,7 +300,7 @@
 
     <script>
         // =============================================
-        // НОВЫЙ FIREBASE КОНФИГ
+        // КОНФИГУРАЦИЯ FIREBASE
         // =============================================
         const firebaseConfig = {
             apiKey: "AIzaSyCIBVlQhliefITacCWgtHJlol0s3QWYcZU",
