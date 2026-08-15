@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VK 2011</title>
+    <title>ВКонтакте</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <style>
-        /* ===== ОБЩИЕ СТИЛИ ===== */
+        /* ===== ОБЩИЕ СБРОСЫ ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', 'Verdana', Arial, sans-serif; }
         body { background: #DCE1E7; color: #2B587A; }
         a { text-decoration: none; color: #2B587A; cursor: pointer; }
@@ -19,7 +19,7 @@
         ul { list-style: none; }
         #auth-error { color: red; font-size: 12px; margin-bottom: 10px; display: none; }
 
-        /* ===== ЭКРАН ВХОДА ===== */
+        /* ===== ЭКРАН ВХОДА (ОСТАЁТСЯ ПРЕЖНИМ) ===== */
         #auth-screen { display: flex; flex-direction: column; justify-content: flex-start; height: 100vh; background: #ffffff; }
         .auth-header-bar { background: #C9D1D8; height: 44px; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid #b0b9c0; }
         .auth-header-bar svg { height: 24px; width: auto; fill: #fff; }
@@ -33,10 +33,10 @@
         .auth-signup-area { margin-top: 15px; padding-top: 10px; border-top: 1px solid #E5E9ED; }
         .auth-signup-area button { width: 100%; background: #E5E9ED; color: #45688E; border: 1px solid #C5D0DB; padding: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
-        /* ===== ДЕСКТОПНЫЙ ДИЗАЙН (ПОЛНОСТЬЮ ПЕРЕДЕЛАН) ===== */
+        /* ===== ДЕСКТОПНЫЙ ДИЗАЙН (ТОЧНО КАК НА СКРИНШОТЕ) ===== */
         .desktop-view { display: none; }
-        
-        /* Шапка */
+
+        /* 1. Шапка */
         .desktop-header {
             background: linear-gradient(to bottom, #6D98C6, #45739E);
             height: 30px;
@@ -46,35 +46,94 @@
             justify-content: space-between;
             align-items: center;
             color: white;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
         }
         .desktop-header .left { display: flex; align-items: center; gap: 10px; }
-        .desktop-header .logo-svg { height: 18px; display: block; }
-        .desktop-header .search-box { display: flex; align-items: center; background: #fff; border-radius: 2px; padding: 1px 8px; height: 22px; }
-        .desktop-header .search-box input { border: none; outline: none; font-size: 11px; width: 160px; background: transparent; }
-        .desktop-header .search-box span { color: #999; font-size: 11px; margin-left: 5px; }
-        .desktop-header .nav-links { display: flex; gap: 15px; font-weight: normal; font-size: 11px; }
+        .logo-svg { height: 18px; display: block; }
+        .search-box {
+            background: #fff; border-radius: 2px; padding: 1px 8px; height: 22px;
+            display: flex; align-items: center; color: #777;
+        }
+        .search-box input {
+            border: none; outline: none; font-size: 11px; width: 160px; background: transparent;
+        }
+        .search-box span { font-size: 11px; margin-left: 5px; }
+        .desktop-header .nav-links { display: flex; gap: 15px; font-weight: normal; }
         .desktop-header .nav-links a { color: #E2EBF3; }
         .desktop-header .nav-links a:hover { color: white; }
 
-        /* Макет */
-        .desktop-layout { display: flex; max-width: 960px; margin: 10px auto; gap: 15px; }
-        
-        /* Левое меню */
-        .desktop-sidebar { width: 180px; flex-shrink: 0; }
+        /* 2. Макет */
+        .desktop-layout {
+            display: flex;
+            max-width: 960px;
+            margin: 10px auto;
+            gap: 0;
+            background: #DCE1E7;
+        }
+
+        /* 3. Левое меню */
+        .desktop-sidebar { width: 200px; padding-right: 15px; }
         .desktop-sidebar ul li { margin-bottom: 2px; }
-        .desktop-sidebar ul li a { display: block; padding: 2px 0; font-size: 13px; }
+        .desktop-sidebar ul li a {
+            display: block; padding: 2px 0; font-size: 13px; color: #2B587A;
+        }
         .desktop-sidebar ul li a:hover { background: #E1E7ED; text-decoration: none; }
-        .desktop-sidebar .section-title { margin-top: 15px; font-weight: bold; color: #2B587A; font-size: 13px; }
+        .desktop-sidebar .section-title {
+            margin-top: 15px; font-weight: bold; color: #2B587A; font-size: 13px;
+            border-top: 1px solid #DCE1E7; padding-top: 8px;
+        }
+        .desktop-sidebar .badge {
+            background: #DCE1E7; color: #666; font-size: 10px; padding: 0 4px; border-radius: 2px;
+        }
         .desktop-sidebar .app-list a { font-size: 12px; color: #2B587A; }
-        .desktop-sidebar .badge { background: #DCE1E7; color: #666; font-size: 10px; padding: 0 4px; border-radius: 2px; }
 
-        /* Контент */
-        .desktop-content { flex: 1; background: #fff; border: 1px solid #C5D0DB; }
-        .desktop-page-title { padding: 10px 15px; border-bottom: 1px solid #E4EAF0; font-size: 16px; font-weight: normal; color: #2B587A; }
+        /* 4. Правый контент */
+        .desktop-content {
+            flex: 1;
+            background: #fff;
+            border: 1px solid #C5D0DB;
+        }
+        .desktop-page-title {
+            padding: 10px 15px;
+            border-bottom: 1px solid #E4EAF0;
+            font-size: 16px;
+            font-weight: normal;
+            color: #000;
+        }
+        .desktop-page-content { padding: 15px; }
 
-        /* ===== МОБИЛЬНЫЙ (без изменений, работает как раньше) ===== */
+        /* Посты в старом стиле */
+        .desktop-post {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            gap: 10px;
+        }
+        .desktop-post img { width: 40px; height: 40px; border-radius: 2px; border: 1px solid #ddd; object-fit: cover; }
+        .desktop-post .author { font-weight: bold; color: #2B587A; }
+        .desktop-post .date { color: #999; font-size: 11px; }
+        .desktop-post .text { margin-top: 5px; line-height: 1.4; color: #333; }
+        .post-image-container { margin-top: 8px; width: 100%; max-width: 300px; border-radius: 2px; overflow: hidden; border: 1px solid #eee; }
+        .post-image-container img { width: 100%; height: auto; display: block; object-fit: cover; }
+
+        /* Поле ввода поста (старый стиль) */
+        .desktop-post-input {
+            background: #f9f9f9; border: 1px solid #eee; padding: 10px; margin-bottom: 10px;
+        }
+        .desktop-post-input textarea {
+            width: 100%; border: 1px solid #ccc; padding: 5px; border-radius: 2px;
+            font-family: inherit; resize: vertical; min-height: 40px; font-size: 13px;
+        }
+        .desktop-post-input .btn-row {
+            margin-top: 5px; text-align: right;
+        }
+        .desktop-post-input .btn-row button {
+            background: #5E83A9; color: white; border: none; padding: 4px 15px;
+            border-radius: 2px; cursor: pointer; font-size: 12px;
+        }
+
+        /* ===== МОБИЛЬНАЯ ВЕРСИЯ (ОСТАЁТСЯ БЕЗ ИЗМЕНЕНИЙ) ===== */
         .mobile-view { display: none; padding-bottom: 50px; background: #F2F2F2; min-height: 100vh; }
         .mobile-header { background-image: linear-gradient(to bottom, #5E83A9, #3A6087); height: 44px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; color: white; font-weight: bold; font-size: 18px; padding: 0 10px; text-shadow: 0 1px 0 rgba(0,0,0,0.3); }
         .mobile-header .logout-btn { position: absolute; right: 10px; top: 12px; color: #dbeaff; font-size: 13px; font-weight: normal; }
@@ -86,7 +145,6 @@
         .mobile-view-container { display: none; background: #f2f2f2; min-height: calc(100vh - 94px); }
         .mobile-view-container.active { display: block; }
         .mobile-empty { padding: 40px 20px; text-align: center; color: #666; }
-        
         .mobile-profile-header { background: #fff; padding: 15px; border-bottom: 1px solid #ddd; display: flex; gap: 15px; align-items: center; }
         .mobile-profile-avatar { width: 80px; height: 80px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
         .mobile-profile-name { font-size: 18px; font-weight: bold; color: #000; }
@@ -95,14 +153,12 @@
         .mobile-create-post .file-label { cursor: pointer; font-size: 20px; padding: 0 10px; }
         .mobile-create-post .file-label input { display: none; }
         .mobile-create-post button { background: #5E83A9; color: white; border: 1px solid #3A6087; padding: 0 15px; border-radius: 2px; font-size: 14px; font-weight: bold; cursor: pointer; height: 40px; }
-        
         .mobile-post img { width: 40px; height: 40px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
         .friend-item, .chat-item { background: #fff; border-bottom: 1px solid #eee; padding: 12px 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .friend-item:hover, .chat-item:hover { background: #f4f6f8; }
         .friend-info { display: flex; gap: 10px; align-items: center; }
         .friend-info img { width: 45px; height: 45px; border-radius: 2px !important; border: 1px solid #ddd; object-fit: cover; }
         .add-btn { color: #fff; background: #5E83A9; padding: 4px 12px; border-radius: 2px; font-size: 12px; border: 1px solid #3F6484; cursor: pointer; }
-        
         #chat-interface { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F2F2F2; z-index: 9999; flex-direction: column; }
         .chat-header { background: #5E83A9; color: white; padding: 12px; display: flex; align-items: center; gap: 15px; min-height: 44px; }
         .chat-header .back-btn { font-size: 20px; cursor: pointer; }
@@ -113,15 +169,18 @@
         .chat-input-area input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 2px; font-size: 14px; }
         .chat-input-area button { background: #5E83A9; color: white; border: none; padding: 0 20px; border-radius: 2px; font-weight: bold; cursor: pointer; }
 
-        /* ===== СТИЛИ ДЛЯ ПК ПОСТОВ И ПОДАРКОВ ===== */
-        .desktop-page-content { padding: 15px; }
-        .post-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; gap: 10px; }
-        .post-item img { width: 40px; height: 40px; border-radius: 2px; border: 1px solid #ddd; object-fit: cover; }
-        .post-item .author { font-weight: bold; color: #2B587A; }
-        .post-item .date { color: #999; font-size: 11px; }
-        .post-item .text { margin-top: 5px; line-height: 1.4; color: #333; }
-        .gifts-store-window { background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
-        .gift-grid, .my-gifts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .edit-btn { background: #e0e0e0; color: #333; border: none; padding: 4px 12px; border-radius: 2px; font-size: 12px; cursor: pointer; margin-left: 10px; }
+        .edit-btn:hover { background: #ccc; }
+        .profile-info-block { margin-top: 5px; font-size: 13px; color: #333; display: flex; flex-direction: column; gap: 2px; }
+        .profile-info-block span { color: #777; font-weight: normal; }
+        .edit-form { background: #F9F9F9; padding: 10px; border: 1px solid #ddd; border-radius: 2px; margin-top: 10px; display: none; flex-direction: column; gap: 8px; }
+        .edit-form input, .edit-form textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 2px; font-family: inherit; font-size: 13px; }
+        .edit-form button { background: #5E83A9; color: white; border: none; padding: 6px 15px; border-radius: 2px; cursor: pointer; }
+        .edit-form button:hover { background: #4A739E; }
+        .delete-wall-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 2px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .delete-wall-btn:hover { background: #c9302c; }
+
+        #offline-banner { display: none; background: #d9534f; color: white; text-align: center; padding: 5px; font-size: 12px; position: sticky; top: 44px; z-index: 101; }
 
         @media (min-width: 769px) { .desktop-view { display: block; } .mobile-view { display: none !important; } }
         @media (max-width: 768px) { .desktop-view { display: none !important; } .mobile-view { display: block; } }
@@ -131,7 +190,7 @@
 
     <div id="offline-banner">⚠️ Нет соединения с интернетом. Проверьте подключение.</div>
 
-    <!-- ЭКРАН ВХОДА -->
+    <!-- ===== ЭКРАН ВХОДА ===== -->
     <div id="auth-screen">
         <div class="auth-header-bar">
             <svg viewBox="0 0 24 24"><path d="M21.6 8.5c.3-.9.6-1.4-1.2-1.4h-2.9c-.9 0-1.3.5-1.5 1.2L14.5 13l-1.7-4.9c-.2-.6-.6-1-1.4-1H8.8c-.9 0-1.2.5-1.2.9 0 1.2 2.4 7.6 2.4 7.6s-1.6 2.3-1.8 2.5c-.2.2-.3.5-.3.8 0 .4.1.8.8.8h2.9v4.1c0 .5.2.7.8.7h2.5c.5 0 .8-.3.8-.8v-5.5c0-.8.4-1 1.2-1h1.4c1.2 0 1.4-.6 1.6-1.3l2.1-5.9z"/></svg>
@@ -151,12 +210,11 @@
         </div>
     </div>
 
-    <!-- ДЕСКТОП (НОВЫЙ ДИЗАЙН) -->
+    <!-- ===== ДЕСКТОП (СТАРЫЙ ДИЗАЙН ВК) ===== -->
     <div id="desktop-app" class="desktop-view">
         <div class="desktop-header">
             <div class="left">
-                <!-- Логотип В Контакте -->
-                <svg class="logo-svg" viewBox="0 0 400 60" fill="none">
+                <svg class="logo-svg" viewBox="0 0 400 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="bGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
@@ -191,38 +249,60 @@
             <div class="desktop-sidebar">
                 <ul>
                     <li><a href="#" onclick="showDeskPage('wall')"><b>Моя Страница</b> <span style="font-weight:normal;color:#777;font-size:11px;">ред.</span></a></li>
-                    <li><a href="#" onclick="showDeskPage('friends')">Мои Друзья</a></li>
+                    <li><a href="#" onclick="showDeskPage('wall')">Мои Друзья</a></li>
                     <li><a href="#" onclick="showDeskPage('wall')">Мои Фотографии</a></li>
                     <li><a href="#" onclick="showDeskPage('wall')">Мои Видеозаписи</a></li>
                     <li><a href="#" onclick="showDeskPage('messages')">Мои Сообщения</a></li>
                     <li><a href="#" onclick="showDeskPage('wall')">Мои Группы</a></li>
-                    <li><a href="#" onclick="showDeskPage('news')">Мои Новости</a></li>
+                    <li><a href="#" onclick="showDeskPage('wall')">Мои Новости</a></li>
                     <li><a href="#" onclick="showDeskPage('wall')">Мои Настройки</a></li>
                     
-                    <li class="section-title" style="margin-top:15px;">Приложения <span class="badge">+6</span></li>
+                    <li class="section-title">Приложения <span class="badge">+6</span></li>
                     <li class="app-list"><a href="/games/turyaga.swf">Тюряга</a></li>
                     <li class="app-list"><a href="/games/bomzh.swf">Я — Бомж 18+</a></li>
                     <li class="app-list"><a href="/games/metro2033.swf">Метро 2033</a></li>
                 </ul>
             </div>
 
-            <!-- Контент -->
+            <!-- Правый контент -->
             <div class="desktop-content" id="desktop-main">
                 <div id="desk-page-wall">
                     <div class="desktop-page-title">Моя Страница</div>
                     <div class="desktop-page-content">
-                        <div style="background:#f9f9f9;border:1px solid #eee;padding:10px;margin-bottom:10px;">
-                            <textarea id="desk-post-text" style="width:100%;border:1px solid #ccc;padding:5px;border-radius:2px;font-family:inherit;resize:vertical;min-height:40px;" placeholder="Что у вас нового?"></textarea>
-                            <div style="margin-top:5px;text-align:right;"><button onclick="createPost('desktop')" style="background:#5E83A9;color:white;border:none;padding:4px 15px;border-radius:2px;cursor:pointer;">Отправить</button></div>
+                        <div class="desktop-post-input">
+                            <textarea id="desk-post-text" placeholder="Что у вас нового?"></textarea>
+                            <div class="btn-row">
+                                <button onclick="createPost('desktop')">Отправить</button>
+                            </div>
                         </div>
                         <div id="desktop-wall-content"></div>
                     </div>
+                </div>
+                
+                <div id="desk-page-news" style="display:none;">
+                    <div class="desktop-page-title">Новости друзей</div>
+                    <div class="desktop-page-content"><div id="desk-news-content"></div></div>
+                </div>
+                
+                <div id="desk-page-gifts" style="display:none;">
+                    <div class="desktop-page-title">🎁 Подарки</div>
+                    <div class="desktop-page-content"><div id="desk-gifts-content"></div></div>
+                </div>
+                
+                <div id="desk-page-friends" style="display:none;">
+                    <div class="desktop-page-title">Мои Друзья</div>
+                    <div class="desktop-page-content"><div id="desk-friends-list"></div></div>
+                </div>
+                
+                <div id="desk-page-messages" style="display:none;">
+                    <div class="desktop-page-title">Сообщения</div>
+                    <div class="desktop-page-content"><div id="desk-msg-list"></div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- МОБИЛЬНЫЙ (ОСТАЛСЯ БЕЗ ИЗМЕНЕНИЙ) -->
+    <!-- ===== МОБИЛЬНЫЙ ===== -->
     <div id="mobile-app" class="mobile-view">
         <div class="mobile-header">
             <span id="mob-header-title">Новости</span>
@@ -237,7 +317,6 @@
                     <button class="edit-btn" onclick="toggleEditProfile()">⚙️ Редактировать</button>
                 </div>
             </div>
-            
             <div class="edit-form" id="mob-edit-form">
                 <input type="text" id="edit-city" placeholder="Город">
                 <input type="text" id="edit-status" placeholder="Семейное положение">
@@ -272,10 +351,6 @@
             <div id="mob-gifts-content"></div>
         </div>
 
-        <div id="mob-games" class="mobile-view-container">
-            <div class="mobile-empty"><h3>🎮 Сюда твой друг положит игры</h3><p>А пока тут пусто, ждём файлы .swf</p></div>
-        </div>
-
         <div id="mob-msg" class="mobile-view-container">
             <div style="padding:10px; background:#fff; border-bottom:1px solid #eee;"><h3 style="font-size:15px; color:#000;">Сообщения</h3></div>
             <div id="mobile-msg-list"></div>
@@ -299,9 +374,6 @@
             <button class="mobile-tab-btn" onclick="switchMobTab('gifts')">
                 <svg class="tab-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>Подарки
             </button>
-            <button class="mobile-tab-btn" onclick="switchMobTab('games')">
-                <svg class="tab-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M21.58 16.09l-1.09-7.66C20.21 6.46 18.52 5 16.53 5H7.47C5.48 5 3.79 6.46 3.51 8.43l-1.09 7.66C2.2 17.63 3.39 19 4.94 19c.68 0 1.32-.27 1.8-.75L9 16h6l2.26 2.25c.48.48 1.12.75 1.8.75 1.55 0 2.74-1.37 2.52-2.91zM7.5 12.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5S9 10.17 9 11s-.67 1.5-1.5 1.5z"/></svg>Игры
-            </button>
             <button class="mobile-tab-btn" onclick="switchMobTab('msg')">
                 <svg class="tab-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 9h8v2H8V9zm4 5H8v-2h4v2zm4-4H8V8h8v2z"/></svg>Сообщения
             </button>
@@ -311,7 +383,7 @@
         </nav>
     </div>
 
-    <!-- ОКНО ЧАТА -->
+    <!-- ===== ОКНО ЧАТА ===== -->
     <div id="chat-interface">
         <div class="chat-header">
             <div class="back-btn" onclick="closeChat()">←</div>
@@ -326,7 +398,7 @@
 
     <script>
         // =============================================
-        // FIREBASE КОНФИГ (БЕЗ СТРЕЛОЧНЫХ ФУНКЦИЙ)
+        // КОНФИГУРАЦИЯ FIREBASE (ОСТАЛСЯ ПРЕЖНИМ)
         // =============================================
         var firebaseConfig = {
             apiKey: "AIzaSyCIBVlQhliefITacCWgtHJlol0s3QWYcZU",
@@ -654,7 +726,7 @@
                                 imgHtml = '<div class="post-image-container"><img src="' + p.imageURL + '" alt="Фото поста"></div>';
                             }
                             getUserAvatar(p.authorId, p.authorName).then(function(avatar) {
-                                html += '<div class="post-item"><img src="' + avatar + '" class="post-avatar"><div><span class="author">' + escapeHtml(p.authorName) + '</span><span class="date">' + date + '</span><div class="text">' + escapeHtml(p.text) + '</div>' + imgHtml + '</div></div>';
+                                html += '<div class="desktop-post"><img src="' + avatar + '" class="post-avatar"><div><span class="author">' + escapeHtml(p.authorName) + '</span><span class="date">' + date + '</span><div class="text">' + escapeHtml(p.text) + '</div>' + imgHtml + '</div></div>';
                             });
                         });
                     }
@@ -719,7 +791,7 @@
                                         imgHtml = '<div class="post-image-container"><img src="' + p.imageURL + '"></div>';
                                     }
                                     getUserAvatar(p.authorId, p.authorName).then(function(avatar) {
-                                        html += '<div class="post-item"><img src="' + avatar + '" class="post-avatar"><div><span class="author">' + escapeHtml(p.authorName) + '</span><span class="date">' + date + '</span><div class="text">' + escapeHtml(p.text) + '</div>' + imgHtml + '</div></div>';
+                                        html += '<div class="desktop-post"><img src="' + avatar + '" class="post-avatar"><div><span class="author">' + escapeHtml(p.authorName) + '</span><span class="date">' + date + '</span><div class="text">' + escapeHtml(p.text) + '</div>' + imgHtml + '</div></div>';
                                     });
                                 });
                             }
@@ -932,7 +1004,7 @@
         }
 
         function showDeskPage(page) {
-            var pages = ['wall', 'news', 'gifts', 'games', 'friends', 'messages'];
+            var pages = ['wall', 'news', 'gifts', 'friends', 'messages'];
             for (var i = 0; i < pages.length; i++) {
                 document.getElementById('desk-page-' + pages[i]).style.display = 'none';
             }
